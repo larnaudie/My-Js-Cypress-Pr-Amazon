@@ -77,17 +77,57 @@ Se puede importar XPAth
     para seleccionar elementos SOLO visibles
           //cy.get(".clasname:visible") -> sino tambien seleccinoa los ocultos
 
-
----------METODO GET-----------------------------------------------------------------------------------
-Nos traer el objeto de la pagina web.
-
 ---------------------Assersions---------------------------------------------------------------
 https://docs.cypress.io/guides/references/assertions#Length
-.should("have.length", 40); -> deberia tener un largo de 40
+.should("have.length", 40);
+     Verifica si deberia tener un largo de 40
+.shoult(`exist`) or .should(`not.exist`)
+    Verifica si un elemento existe en el DOM.
+
+
+//-----------------------METODOS---------------------------------//
+
+-----------------------METODO GET-----------------------------------------------------------------------------------
+Nos traer el objeto de la pagina web.
 
 ----------------------  METODO WAIT-------------------------------------------------------------
 Si queremos hacer que cypress espere un tiempo hay un metodo llamdo
 cy.wait(1000) -> 1 segundo.
+
+------------------------mMETODO EQ---------------------------------
+Selecciona un elemento de un array escribiendo el numero de indice
+Ej;
+  cy.get("[data-asin]").find(".puis-card-container").eq(2).click();
+
+----------------------METODO CONTAINS------------------------------
+Sirve para verificar si contiene un texto y devuelve valor booleano 
+
+
+----------------------METODO RETROCEDER----------------------------
+Con esto puedo retroceder una pagina hacia atras
+    cy.go(`back`); 
+    
+----------------------  METODO REFRESCAR F5-------------------------
+Con esto puedo refrescar toda la pagina.
+    cy.reload
+
+---------------------- METODO INVOKE -------------------------------
+Con este elemento puedo extraer el texto de un elemento
+    .invoke(`text`)
+    
+-----------------------  METODO .EACH -------------------------------
+Con este metodo puedo iterar en un array, el valor de iteracion
+sera igual al valor de largo de mi array, si tengo 5 elementos en el array
+el bloque .each{} se ejecutará 5 veces.
+
+El metodo cuenta con 3 elementos $el, index, $list.
+$el -> Es el elemento que recorre y lo guarda ahi por cada loop
+index -> Será igual al valor del indice que se encuentra el loop
+$list -> Es la lista total de elementos.
+
+
+
+
 */
 //test suite
 describe("My Second test suite", () => {
@@ -146,6 +186,10 @@ describe("My Second test suite", () => {
   it("Adding items to a chart", ()=>{
     //Going into Amazon
     cy.visit("https://www.amazon.com/");
+    if(cy.get('#nav-search').should(`exist`)){
+    }else if(cy.get('#nav-search').should(`not.exist`)){
+      cy.reload();
+    }
     //typing in the search bar google pixel 8
     cy.get("#twotabsearchtextbox").type("Google Pixel 8")
     //doing click on the search button
@@ -156,6 +200,25 @@ describe("My Second test suite", () => {
     //seleccionar ahora los ocultos (comentar linea arriba)
     //cy.get("[data-asin]").should("have.length",31)
     //Selecting one item from this array
-    cy.get("[data-asin]").find(".a-size-medium a-color-base a-text-normal").eq(2).click();
+    cy.get("[data-asin]").find(".puis-card-container").eq(2).find(`.a-size-medium`).click();
+    cy.get('#title > #productTitle').contains(`obsidiana`);
+    cy.go(`back`);
+
+    //Obtengo el objeto a iterar.
+    cy.get("[data-asin]").find(".puis-card-container").each(($el, lndex, $list) => {
+      const celphones = []
+      if($el.contains(`218 GB`)){
+        //Quiero que ingreses al elemento
+        $el.click();
+        //Extraigas el numero del precio.
+        let text = cy.get(`#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span:nth-child(2) > span.a-price-whole`).invoke(`text`)
+        //Lo guardes en la variable celphones
+        text.push(celphones);
+      }
+      console.log(text);
+      if(celphones){
+        //esta condicional recorrera el array celphones y guardara el mejor precio.
+      }
+    })
   })
 })
