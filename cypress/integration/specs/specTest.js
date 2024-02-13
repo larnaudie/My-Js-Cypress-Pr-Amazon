@@ -84,6 +84,30 @@ https://docs.cypress.io/guides/references/assertions#Length
 .shoult(`exist`) or .should(`not.exist`)
     Verifica si un elemento existe en el DOM.
 
+Verificar si un texto contiene una palabra:
+Opcion 1)
+  cy.get('#miElemento').should('contain', 'ejemplo');
+Opcion 2)
+  cy.get('#miElemento').invoke('text').then(texto => {
+  expect(texto).to.include('ejemplo');
+});
+
+---------------------------CONDICIONALES-----------------------------------------------------
+// Los comandos de Cypress son asincrónicos y no puedes usarlos 
+// directamente en una declaración if de JavaScript de la misma 
+// manera que lo harías con una función síncrona. 
+
+Ej:
+cy.visit("https://www.amazon.com/");
+cy.get('#nav-search').then($elemento => {
+  if ($elemento.length > 0) {
+    // Si el elemento existe, hacer clic en él (o realizar otras acciones)
+    cy.get('#nav-search').click();
+  } else {
+    // Si el elemento no existe, recargar la página
+    cy.reload();
+  }
+});
 
 //-----------------------METODOS---------------------------------//
 
@@ -186,14 +210,16 @@ describe("My Second test suite", () => {
   it("Adding items to a chart", ()=>{
     //Going into Amazon
     cy.visit("https://www.amazon.com/");
-    if(cy.get('#nav-search').should(`exist`)){
-    }else if(cy.get('#nav-search').should(`not.exist`)){
+
+      cy.get('#nav-search').should(`exist`).then(()=> {
+      // Si el elemento existe, hacer clic en él (o realizar otras acciones)
+      //typing in the search bar google pixel 8
+       cy.get("#twotabsearchtextbox").type("Google Pixel 8")
+      //doing click on the search button
+      cy.get('#nav-search-submit-button').click();
+      })
       cy.reload();
-    }
-    //typing in the search bar google pixel 8
-    cy.get("#twotabsearchtextbox").type("Google Pixel 8")
-    //doing click on the search button
-    cy.get('#nav-search-submit-button').click();
+
     //verifiaing that should have 31 items.
     cy.wait(3000) //-> will wait for 3 seconds.
     cy.get("[data-asin]").should("have.length",31)
@@ -205,20 +231,53 @@ describe("My Second test suite", () => {
     cy.go(`back`);
 
     //Obtengo el objeto a iterar.
-    cy.get("[data-asin]").find(".puis-card-container").each(($el, lndex, $list) => {
-      const celphones = []
-      if($el.contains(`218 GB`)){
+    cy.get("[data-asin]").find(".a-size-medium:visible").each(($el, lndex, $list) => {
+      const text = cy.wrap($el).invoke(`text`)
+      const celphones = [];
+      text.should(`contain`,`128`).try(()=>{
         //Quiero que ingreses al elemento
-        $el.click();
-        //Extraigas el numero del precio.
-        let text = cy.get(`#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span:nth-child(2) > span.a-price-whole`).invoke(`text`)
-        //Lo guardes en la variable celphones
-        text.push(celphones);
-      }
-      console.log(text);
-      if(celphones){
-        //esta condicional recorrera el array celphones y guardara el mejor precio.
-      }
+        //Para ingresar al elemento tengo que envolverlo wrap
+        cy.wrap($el).then($elemento => {
+          try {
+            // Realizar una aserción
+            expect($elemento).to.exist;
+            expect($elemento).to.be.visible;
+            cy.wrap($el).click();
+            // Si llegamos aquí, las aserciones fueron exitosas
+            // Puedes continuar con el código que deseas ejecutar después de la verificación
+            // ...
+            
+            //Extraigas el numero del precio.
+            cy.get(`#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span:nth-child(2) > span.a-price-whole:visible`)
+            .invoke(`text`)
+             //Lo guardes en la variable celphones
+             //Para ello, debemos manejarlo fuera de javascript
+             .then(priceText=>{
+             celphones.push(priceText)
+        
+             // Imprimir en la consola de Cypress
+             cy.log(`Precio: ${priceText}`);
+
+             // Imprimir en la consola del navegador
+             console.log(`Precio: ${priceText}`);
+        cy.go(`back`)
+       })} catch (error) {
+            // Capturar el error en caso de que las aserciones fallen
+            // Imprimir el error en la consola
+            cy.log(`Error: ${error.message}`);
+            
+            // Continuar con el código, por ejemplo, imprimir en la consola que la aserción falló
+            cy.log('La aserción falló, pero continuamos con el código...');
+          }
+        }); //esta condicional recorrera el array celphones y guardara el mejor precio.
+      }).catch(err=>{
+        
+            // Imprimir el error en la consola
+            cy.log(`Error: ${err.message}`);
+            
+            // Continuar con el código, por ejemplo, imprimir en la consola que la aserción falló
+            cy.log('La aserción falló, pero continuamos con el código...');
+      })
     })
   })
 })
