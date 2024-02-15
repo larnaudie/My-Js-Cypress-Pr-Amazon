@@ -82,22 +82,37 @@ https://docs.cypress.io/guides/references/assertions
 ----------------------------------------------SHOULD---------------------------------
 
 https://docs.cypress.io/guides/references/assertions#Length
-.should("have.length", 40);
+*** .should("have.length", 40);
      Verifica si deberia tener un largo de 40
-.shoult(`exist`) or .should(`not.exist`)
+*** .shoult(`exist`) or .should(`not.exist`)
     Verifica si un elemento existe en el DOM.
 
-Verificar si un texto contiene una palabra:
-Opcion 1)
-  cy.get('#miElemento').should('contain', 'ejemplo');
-Opcion 2)
-  cy.get('#miElemento').invoke('text').then(texto => {
-  expect(texto).to.include('ejemplo');
+*** Verificar si un texto contiene una palabra:
+    Opcion 1)
+      cy.get('#miElemento').should('contain', 'ejemplo');
+    Opcion 2)
+      cy.get('#miElemento').invoke('text').then(texto => {
+       expect(texto).to.include('ejemplo');
 });
 
-Verificar si un checkbox ha sido seleccionado correctamente
+*** Verificar si un checkbox ha sido seleccionado correctamente
     //Selecting Google checkbox
     cy.get(`#p_89\/Google > span > a > div > label > i`).check().should(`be.checked`);
+
+*** Verificar si tiene exactamente el texto impreso en pantalla
+    .should(`have.text`,`texto`);
+
+*** Hacer varios should juntos no... USAR METODO AND
+
+                                              --METODO SHOULD con AND-
+*** Si quisieramos validar mas de una cosa a la vez podemos usar el .and, por ejemplo si tiene un valor o algo.
+
+  //Going to the checkbox
+    cy.get('#gift-wrap').check().should(`be.checked`).and(`have.value`,`nameOfValue`);
+
+*** Si quisieramos verificar si esta deschequeado podemos usar el should de esta forma y combinar con .uncheck()
+.should(`not.be.checked`)
+
 
 //////////////////////////////////////   ASYNCRONISMO   ///////////////////////////////////////////////////////////
 
@@ -137,40 +152,51 @@ NO PODEMOS CONCATENAR CYPRESS COMAND CON JAVASCRIPT COMAND, PARA ESO HAY QUE USA
 ///////////////////////////////////   METODOS    ////////////////////////////////////////////////////
 https://docs.cypress.io/api/table-of-contents
 
+
 -----------------------------METODO CLICK--------------------------------------------------
 Luego de un cy.get, podemos hacer un .click()
 
 Si este click esta dentro de un .each, tendremos que usar cy.wrap.
 
------------------------METODO GET-----------------------------------------------------------------------------------
+
+----------------------------  METODO GET-----------------------------------------------------------------------------------
 Nos traer el objeto de la pagina web.
 
-----------------------  METODO WAIT-------------------------------------------------------------
+
+
+-----------------------------  METODO WAIT-------------------------------------------------------------
 Si queremos hacer que cypress espere un tiempo hay un metodo llamdo
 cy.wait(1000) -> 1 segundo.
 
-------------------------mMETODO EQ---------------------------------
+
+----------------------------    METODO EQ---------------------------------
 Selecciona un elemento de un array escribiendo el numero de indice
 Ej;
   cy.get("[data-asin]").find(".puis-card-container").eq(2).click();
 
-----------------------METODO CONTAINS------------------------------
+
+
+----------------------------   METODO CONTAINS------------------------------
 Sirve para verificar si contiene un texto y devuelve valor booleano 
 
 
-----------------------METODO RETROCEDER----------------------------
+
+-----------------------------  METODO RETROCEDER----------------------------
 Con esto puedo retroceder una pagina hacia atras
     cy.go(`back`); 
     
-----------------------  METODO REFRESCAR F5-------------------------
+    
+------------------------------  METODO REFRESCAR F5-------------------------
 Con esto puedo refrescar toda la pagina.
     cy.reload
 
----------------------- METODO INVOKE -------------------------------
+
+---------------------------------- METODO INVOKE -------------------------------
 Con este elemento puedo extraer el texto de un elemento
     .invoke(`text`)
     
------------------------  METODO .EACH -------------------------------
+
+------------------------------------  METODO .EACH -------------------------------
 
 Con este metodo puedo iterar en un array, el valor de iteracion
 sera igual al valor de largo de mi array, si tengo 5 elementos en el array
@@ -196,13 +222,15 @@ cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
   cy.wrap($el).find(`.elElemento`)
 })
 
+
 ------------------------------ METODO INCLUDES -----------------------------------
 INCLUDES es un metodo de Javascript.
 
 
-------------------  METODO TEXTNO ES UN COMANDO DE CYPRESS--------------------------
+------------------  METODO TEXT NO ES UN COMANDO DE CYPRESS--------------------------
 Sirve para extraer el texto de un elemento, podemos guardarla en una variable para sarla.
 AL NO SER COMANDO DE CYPRESS SE DEBE MANEJAR COMO PROMESA.
+
 
 -------------------------------METODO INVOKE--------------------------------
 Sirve para extraer el texto de un elemento.
@@ -212,17 +240,33 @@ Sirve para extraer el texto de un elemento.
 });
 
 ------------------------------METODO CHECK--------------------------------------
-Debemos obtener el selector del checkbox y sobre el le aplicamos el metodo check()
+
+**** Debemos obtener el selector del checkbox y sobre el le aplicamos el metodo check()
 
     //Selecting Google checkbox
     cy.get(`#p_89\/Google > span > a > div > label > i`).check();
 
-Cuando un elemtno esta siendo solapado por otro, podemos usar 
+**** Cuando un elemtno esta siendo solapado por otro, podemos usar 
 .check({force: true})
+
+
+**** Chequear multiple checkboxes, para ello debemos verficar en inspeccionar elemento
+que tengan el mismo valor en comun, luego en check() le pasamos los valores que queremos
+que esten chequeados:
+
+Ejemplo:
+cy.get(`input[type=`checkbox`]`).check([`option2`,`option1`])
+
+
+------------------------------METODO UNCHECK--------------------------------------
+//Selecting Google checkbox
+    cy.get(`#p_89\/Google > span > a > div > label > i`).uncheck();
+
 
 ------------------------------METODO AS-------------------------------------------
 En vez de guardar todo un selector con un const o let, podemos y DEBEMOS usar as,
 luego para llamarlo lo arrobamos antes del nombre que le dimos
+
 
 
 
@@ -488,7 +532,8 @@ describe("My first test suite", () => {
       cy.log(price.text());
     });
   })
-  it("Testing checkboxes and Dropdowns",()=>{
+
+  it.skip("Testing checkboxes on Amazon",()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     cy.visit("https://www.amazon.com/");
@@ -504,11 +549,47 @@ describe("My first test suite", () => {
     cy.get(`li[aria-label="128 GB"]`).find('input[type="checkbox"]').check({force: true})
     
     //Going into a celphone that has other checkbox inside him
-    cy.get(`puis-card-container:visible`).find(`h2.a-size-mini:visible`).should(`have.text`, `Google Pixel 7`).click();
+    //Doesn't allow to click by an error in the render inside cypress.
+    cy.get(`h2.a-size-mini:visible`).eq(1).should(`contain`,`Google Pixel`);
+    cy.get(`img.s-image`).eq(1).click();
+    //Going to the checkbox, doing also multiple assertions.
+    cy.get('#gift-wrap').check().should(`be.checked`).and(`have.value`,`yes`);
+    //Unchecking the checkbox and verifying that was unchecked.
+    cy.get('#gift-wrap').uncheck().should(`not.be.checked`);
 
+    cy.go(`back`);
+    cy.wait(3000);
+  });
 
+  it("Testing with multiple checkboxes", ()=>{
+
+    cy.visit("https://www.amazon.com/");
+      //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
+      cy.reload();
+      //typing in the search bar google pixel 8
+      cy.get("#twotabsearchtextbox").type("Google Pixel 8")
+      //doing click on the search button
+      cy.get('#nav-search-submit-button').click();
+      //Trying to select multiple checkboxes.
+      cy.get(`.puis-bold-weight-text:visible`).then((item)=>{
+        cy.wrap(item).should("contain", "Version Del Sistema Operativo")
+      })
+
+      
+  });
+
+  it.skip("Testing dropdowns on Amazon",()=>{
+    //When you are using too many time the same label, you can grab it with a new name with as 
+    //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
+    cy.visit("https://www.amazon.com/");
+    //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
+    cy.reload();
+    //typing in the search bar google pixel 8
+    cy.get("#twotabsearchtextbox").type("Google Pixel 8")
+    //doing click on the search button
+    cy.get('#nav-search-submit-button').click();
     //We opened a dropdown menu
-    //cy.get(`span[data-action="a-dropdown-button"]`).click();
-  })
+    cy.get(`span[data-action="a-dropdown-button"]`).click();
+  });
   
 })
