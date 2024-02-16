@@ -75,6 +75,9 @@ Se puede importar XPAth
         
     para seleccionar elementos SOLO visibles
           //cy.get(".clasname:visible") -> sino tambien seleccinoa los ocultos
+    
+    PARA VIAJAR DE PARENT TO CHILD, de PADRE A HIJO en el selector DEBO DEJAR UN ESPACIO.
+          EJ; .ui-menu-item-wrapper div
 
 ///////////////////////////////////////   Assersions   /////////////////////////////////////////////////////
 https://docs.cypress.io/guides/references/assertions
@@ -231,6 +234,16 @@ INCLUDES es un metodo de Javascript.
 Sirve para extraer el texto de un elemento, podemos guardarla en una variable para sarla.
 AL NO SER COMANDO DE CYPRESS SE DEBE MANEJAR COMO PROMESA.
 
+EJEMPLO:
+cy.get(".products").as("productLocator");
+    cy.get("@productLocator")
+      .find(".product")
+      .each(($el, index, $list) => {
+        const textVeg = $el.find("h4.product-name").text();
+        if (textVeg.includes("Cashews")) {
+          cy.wrap($el).find("button").click();
+        }
+      });
 
 -------------------------------METODO INVOKE--------------------------------
 Sirve para extraer el texto de un elemento.
@@ -267,7 +280,41 @@ cy.get(`input[type=`checkbox`]`).check([`option2`,`option1`])
 En vez de guardar todo un selector con un const o let, podemos y DEBEMOS usar as,
 luego para llamarlo lo arrobamos antes del nombre que le dimos
 
+///////////////////////////// DROPDOWNS PIQUES ///////////////////////////////
+------------------------------    Static Dropdown       ------------
 
+
+
+------------------------------    Dynamic Dropdown       -----------------------------------
+Cuando vamos a ver un Dropdown Dinamico y se nos esconde la barra para poner insepccionar, vamos a darle click izquierdo
+antes de que cierre el dropdown y le daremos en inspect, entonces eso nos llevara al DOM del dropdown
+
+Si no supiera cual dropdown tiene el texto que me sirve, podesmo hacer un selector generico.
+En el Dom tengo esto:
+
+<ul id="ui-id-1" tabindex="0" class="ui-menu ui-widget ui-widget-content ui-autocomplete ui-front">
+  <li class = "ui-menu-item"> </li>>
+    <div id="ui-id-2" tabindex="-1" class="ui-menu-item-wrapper">  British indian Ocean Territory </div>
+  <li class = "ui-menu-item"> </li>>
+    <div id="ui-id-2" tabindex="-1" class="ui-menu-item-wrapper"> India  </div>
+  <li class = "ui-menu-item"> </li>>
+    <div id="ui-id-2" tabindex="-1" class="ui-menu-item-wrapper"> Indonesia </div>
+</ul>
+
+Para que se seleccionen los elementos, debo interactuar en la ui con el dropdown para que sean visibles.
+Alli queremos ver cual tiene india y seleccionar ese.
+PARA VIAJAR DE PARENT TO CHILD, de PADRE A HIJO en el selector DEBO DEJAR UN ESPACIO.
+EJ; .ui-menu-item-wrapper div
+
+Alli podemos usar el metodo .each para iterar entre esos 3 elementos, en cada index hacemos un if
+Recordar que $el es JQuery
+
+cy.get(`#autocomplete`).type("ind");
+cy.get(`.ui-menu-item-wrapper div`).each(($el, index, $list) => {
+  if ($el.text() === "India") {
+    $el.click();
+  }
+})
 
 
 ////////////////////////  JQUERY IN CYPRESS  ////////////////////////////////////////////
@@ -279,14 +326,14 @@ JQueary es una herramienta de desarrollo disponible para manipular el DOM.
 
 */
 //test suite
-describe("My first test suite", () => {
+describe("TESTING AMAZON WEBPAGE", () => {
   //test case
-  it.skip("Visiting the website", () => {
+  it.skip("PASS- Visiting the website", () => {
       //test step
       cy.visit("https://www.amazon.com/");
     })
 
-  it.skip("Login-IMPOSIBLE TO CHECK CODE", () => {
+  it.skip("FAIL- Login - IMPOSIBLE TO CHECK CODE", () => {
       //test step
       cy.visit("https://www.amazon.com/");
       cy.get("#nav-link-accountList > span > span").click()
@@ -298,8 +345,10 @@ describe("My first test suite", () => {
       cy.get("#continue").click();
   })
 
-  it.skip(`Verifing code to log-in-ERRORS`, ()=>{
-  /*con gmail
+  it.skip(`FAIL- Verifing code to log-in - IMPOSIBLE TO ACCESS TO THE eMAIL`, ()=>{
+    //WAS IMPOSIBLE TO ACCESS TO THE eMAIL TO VERYFY THE CODE.
+
+  /*con gmail*/
     cy.visit('https://mail.google.com')
     cy.get("#identifierId").type("pablolarnaudiedrive2@gmail.com")
     cy.get("#identifierNext > div > button > span").click();
@@ -314,7 +363,7 @@ describe("My first test suite", () => {
     cy.get(".WpHeLc").click();
     cy.get("#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input").type("t108216Y");
     cy.get("#passwordNext > div > button > span").click();
-    */
+
    /*con microsoft
        cy.visit("https://www.microsoft.com/es-uy/");
     cy.get("#meControl").click();
@@ -325,7 +374,7 @@ describe("My first test suite", () => {
     cy.get("#declineButton").click();*/
   })
 
-  it.skip("Testing the search bar", ()=>{
+  it.skip("PASS- Testing the search bar", ()=>{
     //Going into Amazon
     cy.visit("https://www.amazon.com/");
     //typing in the search bar google pixel 8
@@ -336,7 +385,7 @@ describe("My first test suite", () => {
     cy.get("[data-asin]").should("have.length",31)
   })
 
-  it.skip("Catching the Amazon logo", ()=>{
+  it.skip("PASS- Catching the Amazon logo", ()=>{
     //Going into Amazon
     cy.visit("https://www.amazon.com/");
     //Trying to get the Amazon logo. AND SAVING IT INTO A VARIABLE
@@ -353,7 +402,7 @@ describe("My first test suite", () => {
 
   })
 
-  it.skip("Example with rahulshetty about then promises",() => {
+  it.skip("Rahul shetty - Example with about then promises",() => {
       cy.visit("https://rahulshettyacademy.com/seleniumPractise/#/");
       cy.get(".search-keyword").type("ca");
       cy.wait(2000);
@@ -378,7 +427,7 @@ describe("My first test suite", () => {
         .each(($el, index, $list) => {
           const textVeg = $el.find("h4.product-name").text();
           if (textVeg.includes("Cashews")) {
-            $el.find("button").click();
+            cy.wrap($el).find("button").click();
           }
         });
   
@@ -392,7 +441,7 @@ describe("My first test suite", () => {
 
   })
 
-  it.skip("Testing adding an item to a chart-ERRORS", ()=>{
+  it.skip("PASS- Testing adding an item to a chart", ()=>{
     //Going into Amazon
     cy.visit("https://www.amazon.com/");
       //will made a refreash to solve the problem of catch a different search bar
@@ -422,7 +471,7 @@ describe("My first test suite", () => {
     cy.get('.a-truncate-cut').invoke(`text`).should(`contain`, `Google Pixel`)
   })
 
-  it.skip("Testing adding some items to a chart-ERRORS", ()=>{
+  it.skip("PASS- Testing adding some items to a chart-ERRORS", ()=>{
         //Going into Amazon
         cy.visit("https://www.amazon.com/");
         //will made a refreash to solve the problem of catch a different search bar
@@ -487,7 +536,7 @@ describe("My first test suite", () => {
       })
   })
 
-  it.skip("Testing the UI of the items within the list", ()=>{
+  it.skip("PASS- Testing the UI of the items within the list", ()=>{
     cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
     cy.reload();
@@ -507,7 +556,7 @@ describe("My first test suite", () => {
     });
   })
 
-  it.skip("Optimization of the last test case", ()=>{
+  it.skip("PASS- Optimization of the last test case", ()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
 
@@ -533,7 +582,7 @@ describe("My first test suite", () => {
     });
   })
 
-  it.skip("Testing checkboxes on Amazon",()=>{
+  it.skip("PASS- Testing checkboxes on Amazon",()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     cy.visit("https://www.amazon.com/");
@@ -561,7 +610,7 @@ describe("My first test suite", () => {
     cy.wait(3000);
   });
 
-  it("Testing with multiple checkboxes", ()=>{
+  it.skip("PASS- Testing with multiple checkboxes on Amazon", ()=>{
 
     cy.visit("https://www.amazon.com/");
       //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
@@ -571,25 +620,78 @@ describe("My first test suite", () => {
       //doing click on the search button
       cy.get('#nav-search-submit-button').click();
       //Trying to select multiple checkboxes.
-      cy.get(`.puis-bold-weight-text:visible`).then((item)=>{
-        cy.wrap(item).should("contain", "Version Del Sistema Operativo")
-      })
+      cy.get(`ul[data-csa-c-content-id="36816607011"]`).find(`[data-csa-c-type="element"]`).each(($el, index, $list)=>{
 
-      
+        const text = $el.find(`[class="a-size-base a-color-base"]`).text();
+
+        if(text.includes(`Android`)){
+          cy.wrap($el).find('input[type="checkbox"]').check({force: true});
+        }else{
+          cy.log(`There's no Android in the list`);
+        }
+      })
+      //We need the selector of the checkbox that also has another value to decide which one should be selected. 
+      //In Amazon, there's no selector with values, only with the checkbox's selector, so it's imposible to decide
+      //which one could be selected or not.
+    })
+
+  it.skip("Rahul shetty - Testing multiple checkboxes", function () {
+    //Check boxes
+    cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
+    cy.get("#checkBoxOption1")
+      .check()
+      .should("be.checked")
+      .and("have.value", "option1");
+    cy.get("#checkBoxOption1").uncheck().should("not.be.checked");
+    //Here he puts the value of each checkbox in an array, only the one that will be checked will be in the array
+    //If we haven't had a value in the checkbox, it won't be possible to check it.
+    cy.get('input[type="checkbox"]').check(["option2", "option3"]);
+  })
+
+  it.skip("Rahul shetty - Testing dropdowns", ()=>{
+    cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
+    //Static Dropdown
+    cy.get("select").select("option2").should("have.value", "option2");
+    //Dynamic dropdowns
+    cy.get("#autocomplete").type("ind");
   });
 
-  it.skip("Testing dropdowns on Amazon",()=>{
-    //When you are using too many time the same label, you can grab it with a new name with as 
+  it("Testing dropdowns on Amazon",()=>{
+    //We have two types of dropdowns Statics and dynamic.
+
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
     cy.reload();
+  
+    //DYNAMIC DROPDOWN
+
     //typing in the search bar google pixel 8
-    cy.get("#twotabsearchtextbox").type("Google Pixel 8")
-    //doing click on the search button
-    cy.get('#nav-search-submit-button').click();
-    //We opened a dropdown menu
-    cy.get(`span[data-action="a-dropdown-button"]`).click();
+    cy.get("#twotabsearchtextbox").type(`Google Pixel`);
+
+    cy.wait(3000);
+      
+    cy.get(`div[class="two-pane-results-container"] div[class="s-suggestion s-suggestion-ellipsis-direction"]`).each(($el, index, $list)=>{
+      cy.log($el.attr(`aria-label`));
+      if($el.attr(`aria-label`) == `google pixel 7`){
+        cy.wrap($el).click();
+      }else{
+        cy.log(`There's no Google Pixel 7 in the list in ${index}`);
+      }
+
+    });
+    
+    //STATIC DROPDOWN
+    cy.get(`#a-autoid-0`).click();
+    cy.get(`ul[class="a-nostyle a-list-link"] li[class="a-dropdown-item"]`).each(($el, index, $list)=>{
+      if($el.text() == (`Los más vendidos`)){
+        cy.wrap($el).click();
+      }else{
+        cy.log(`There's no matched text in the list in ${index}`);
+      }
+    })
+
+
   });
   
 })
