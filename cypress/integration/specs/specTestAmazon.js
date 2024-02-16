@@ -116,6 +116,10 @@ https://docs.cypress.io/guides/references/assertions#Length
 *** Si quisieramos verificar si esta deschequeado podemos usar el should de esta forma y combinar con .uncheck()
 .should(`not.be.checked`)
 
+**** Si queremos ver si algo es visible o no, podemos usar 
+.should(`be.visible`)
+.should(`not.be.visible`)
+
 
 //////////////////////////////////////   ASYNCRONISMO   ///////////////////////////////////////////////////////////
 
@@ -280,6 +284,22 @@ cy.get(`input[type=`checkbox`]`).check([`option2`,`option1`])
 En vez de guardar todo un selector con un const o let, podemos y DEBEMOS usar as,
 luego para llamarlo lo arrobamos antes del nombre que le dimos
 
+
+-----------------------------       METODO SELECT --------------------------------
+Simplemente tenemos que escribir dentro de select el valor que va a contenter, 
+es decir el texto que tiene dentro
+NO ADMITE OTRO QUE NO SEA
+
+Si tengo en el DOM_
+  <select id="searchDropdownBox" name="searchDropdownBox">
+    <option value="search-alias=alexa-skills">All Categories</option>
+    <option value="search-alias=alexa-skills">Alexa Skills</option>
+  </select>
+
+Alli con decirle asi, lo estaremos sleeccionando:
+cy.get(`select`).select(`Alexa Skills`)
+
+
 ///////////////////////////// DROPDOWNS PIQUES ///////////////////////////////
 ------------------------------    Static Dropdown       ------------
 
@@ -324,18 +344,40 @@ TEXT es un metodo que esta dentro de Jquery en Cypress, soporta jquery metods, y
 No hay un metodo que grabe el texto en cypress.
 JQueary es una herramienta de desarrollo disponible para manipular el DOM.
 
+ ///////////////////////////// HOOKS //////////////////////////////////////////
+
+ before(() => {
+ })
+ after(() => {
+ })
+ beforeEach(() => {
+ })
+ afterEach(() => {
+ })
+
+Esos son los hooks, todo lo que se encuentre en ese bloquye ocurrira antes, despues, antes de cada it block,
+y despues de cada it block.
+Sirve para eliminar catche, o cerrar el browser.
+
+
 */
 //test suite
 describe("TESTING AMAZON WEBPAGE", () => {
   //test case
+beforeEach(() => {
+  cy.visit("https://www.amazon.com/");
+});
+
   it.skip("PASS- Visiting the website", () => {
       //test step
-      cy.visit("https://www.amazon.com/");
+      //Going into Amazon -> with before each hook
+       // cy.visit("https://www.amazon.com/");
     })
 
   it.skip("FAIL- Login - IMPOSIBLE TO CHECK CODE", () => {
       //test step
-      cy.visit("https://www.amazon.com/");
+      //Going into Amazon -> with before each hook
+       // cy.visit("https://www.amazon.com/");
       cy.get("#nav-link-accountList > span > span").click()
       cy.get("#createAccountSubmit").click();
       cy.get("#ap_customer_name").type("Pablotest");
@@ -375,8 +417,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   })
 
   it.skip("PASS- Testing the search bar", ()=>{
-    //Going into Amazon
-    cy.visit("https://www.amazon.com/");
+    //Going into Amazon -> with before each hook
+       // cy.visit("https://www.amazon.com/");
     //typing in the search bar google pixel 8
     cy.get("#twotabsearchtextbox").type("Google Pixel 8")
     //doing click on the search button
@@ -386,8 +428,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   })
 
   it.skip("PASS- Catching the Amazon logo", ()=>{
-    //Going into Amazon
-    cy.visit("https://www.amazon.com/");
+    //Going into Amazon -> with before each hook
+       //  cy.visit("https://www.amazon.com/");
     //Trying to get the Amazon logo. AND SAVING IT INTO A VARIABLE
     //This two lines, will trigger: logo is not a function, because cypress couldb't solve it without a promise
     //Cypress can't handle this get inside a variable.
@@ -442,8 +484,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   })
 
   it.skip("PASS- Testing adding an item to a chart", ()=>{
-    //Going into Amazon
-    cy.visit("https://www.amazon.com/");
+    //Going into Amazon -> with before each hook
+       //  cy.visit("https://www.amazon.com/");
       //will made a refreash to solve the problem of catch a different search bar
       cy.reload();
       //will serch for the search bar
@@ -472,8 +514,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   })
 
   it.skip("PASS- Testing adding some items to a chart-ERRORS", ()=>{
-        //Going into Amazon
-        cy.visit("https://www.amazon.com/");
+        //Going into Amazon -> with before each hook
+       // cy.visit("https://www.amazon.com/");
         //will made a refreash to solve the problem of catch a different search bar
         cy.reload();
         //will serch for the search bar
@@ -537,7 +579,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   })
 
   it.skip("PASS- Testing the UI of the items within the list", ()=>{
-    cy.visit("https://www.amazon.com/");
+    //Going into Amazon -> with before each hook
+    //cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
     cy.reload();
     //typing in the search bar google pixel 8
@@ -559,8 +602,9 @@ describe("TESTING AMAZON WEBPAGE", () => {
   it.skip("PASS- Optimization of the last test case", ()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
-
-    cy.visit("https://www.amazon.com/");
+    
+    //Going into Amazon -> with before each hook
+    //cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
     cy.reload();
     //typing in the search bar google pixel 8
@@ -585,7 +629,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
   it.skip("PASS- Testing checkboxes on Amazon",()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
-    cy.visit("https://www.amazon.com/");
+    //cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
     cy.reload();
     //typing in the search bar google pixel 8
@@ -611,8 +655,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   });
 
   it.skip("PASS- Testing with multiple checkboxes on Amazon", ()=>{
-
-    cy.visit("https://www.amazon.com/");
+      //Going into Amazon -> with before each hook
+       // cy.visit("https://www.amazon.com/");
       //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
       cy.reload();
       //typing in the search bar google pixel 8
@@ -637,7 +681,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
 
   it.skip("Rahul shetty - Testing multiple checkboxes", function () {
     //Check boxes
-    cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
+    //Going into Amazon -> with before each hook
+       // cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
     cy.get("#checkBoxOption1")
       .check()
       .should("be.checked")
@@ -649,7 +694,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
   })
 
   it.skip("Rahul shetty - Testing dropdowns", ()=>{
-    cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
+    //Going into Amazon -> with before each hook
+    // cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
     //Static Dropdown
     cy.get("select").select("option2").should("have.value", "option2");
     //Dynamic dropdowns
@@ -660,7 +706,8 @@ describe("TESTING AMAZON WEBPAGE", () => {
     //We have two types of dropdowns Statics and dynamic.
 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
-    cy.visit("https://www.amazon.com/");
+    //Going into Amazon -> with before each hook
+    // cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
     cy.reload();
   
@@ -684,14 +731,19 @@ describe("TESTING AMAZON WEBPAGE", () => {
     //STATIC DROPDOWN
     cy.get(`#a-autoid-0`).click();
     cy.get(`ul[class="a-nostyle a-list-link"] li[class="a-dropdown-item"]`).each(($el, index, $list)=>{
+
+      //Remember that it's a JQ object, we have to resolve the promise, with each method, automatically resolve the promise.
       if($el.text() == (`Los más vendidos`)){
         cy.wrap($el).click();
       }else{
         cy.log(`There's no matched text in the list in ${index}`);
       }
     })
-
-
+    cy.get('.a-dropdown-prompt').should(`contain`, `Los más vendidos`);	
   });
   
+  it("Testing popup on Amazon", ()=>{
+
+  })
+
 })
