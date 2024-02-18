@@ -1,6 +1,7 @@
 {
   "devDependencies": {
-    "cypress": "^13.6.4"
+    "cypress": "^13.6.4",
+    "cypress-iframe": "^1.0.1"
   },
   "scripts": {
     "cypress:open": "cypress open"

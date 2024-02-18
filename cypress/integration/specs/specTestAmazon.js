@@ -1,5 +1,3 @@
-"use stric"
-/// <reference types="Cypress" />
 /*
 TIPS:
 
@@ -17,7 +15,9 @@ npm run cypress:open
 
 Luego correr el codigo en terminal para abrir interfaz
 npm run cypress:open
+
 //////////////////////////////////    EJECUTAR CYPRESS    ///////////////////////////////////////////
+
 //Para ejecutar todos los archivos spec en la carpeta package.json
 ./node_modules/.bin/cypress run
 
@@ -35,23 +35,135 @@ $ cypress run --header
 $ cypress run --browser chrome
 
 -//////////////////////      AUTO-SUGERENCIA CYPRESS    ////////////////////////////////////////////
+
+
 /// <reference types="Cypress" />
 Esto se debe colocar arriba del todo en cypress y activa la sugerencia automatica
 
+
+
 //////////////////////////////    cARPETAS Y SUS FUNCIONES   ////////////////////////////////////////////
-//Carpeta fixtures
+
+
+
+                         -------    Carpeta fixtures -------------
+
 Aca va a venir todos los datos que sean leidos de externos, como API JSONS, EXCEL
 Podemos invocar los datos almacenados en fixtures con el comando: fixtures
-//Carpeta integration
+
+Por ejemplo, si vamos a usar datos para loguearnos, lo vamos a guardar en la carpeta
+fixtures como un objeto en el archivo examples.json.
+
+{
+  name: "Pablo",
+  lastname: "Larnaudie",
+  gender: "Male"
+}
+
+Una vez configurados estos datos, los invocamos en el spec archivo con cy.fixtures()
+Tendremos que pasar el path, automaticamente cypress va a tomar el camino del archivo examples.json
+  asique no vamos a indicarle el path.
+El parametro que pondremos sera el nombre del json, y esto ES UNA PROMESA, asique debera tener esta estructura
+
+  cy.fixture(`example`).then((data)=>{
+    this.data=data
+  })
+
+Ahora lo que tenemos que hacer es pasarle ese parametro del objeto data, representado como this.data, a la
+data global para que puedamos manipular esos datos en todo el framework.
+//USAR IT CON FUNCTION(){})!!!!!!!
+
+cy.fixture(`example`).then((data)){
+  this.data=data
+}
+IT("",FUNCTION(){ });
+
+luego podemos llamarlo en el get, mas abajo asi:
+cy.get(`.claseSelectorName).type(this.data.name)
+
+
+                         -------    Carpeta integration  -------------
+
 Ahi vamos a colocar todos nuestors spec files.
-//Carpeta Support
-Podemos escribir nuestros comandos especificos para usarlos luego.
-//Cypress.config.js
+
+
+
+                         -------    Carpeta Support -------------
+
+
+Podemos escribir nuestros comandos especificos para usarlos luego
+Podemos guardar en la carpeta support/commands.js conjuntos de lineas de codigo,
+para luego copiar y pegar todo este codigo., darle un nombre decomando y llamarlo con 
+tan solo un nombre.
+Entonces, le colcoamos un nombre de comando, luego los parametros que deberiamos colocar manualmente
+La sintaxis para declarar un comando en Cypress es:
+
+Cypress.Commands.add('poneElNombreDelComando ', (parametrosQuePonemos) => { PONE TU CODIGO })
+
+Luego lo llamaremos con cy.poneElNombreDelComando(parametrosQuePonemos);
+
+Si tenemos estas lineas de comando por ejemplo:
+
+*****************************************************************************
+
+//Here I obtain 24 pieces of content, each should iterate by each element
+cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
+        
+//Remember, this can't be handeld by cypress itself
+const textTitle = $el.text();
+//this directly won't work
+//cy.get($el).find(`a.a-link-normal`);
+//$el.text();
+
+//Veryfing in console the value of the $el
+cy.log(textTitle);
+//Adding some logic to select ONLY the items with the following string
+if(textTitle.includes(`Google Pixel 8`)){
+  //this avoid the error triggered bu the click method.
+  cy.once('uncaught:exception', () => false);
+  //Applying the THEN method to handle the variable out of cypress.
+  cy.get($el).find(`a.a-link-normal`).then((btn)=>{
+  //this avoid the error triggered bu the click method.
+  cy.once('uncaught:exception', () => false);
+  //remember we need to wrap $el or btn parameter to do click on it,
+  cy.wrap(btn).click();
+  });
+  //Adding items to a chart
+  cy.get('#add-to-cart-button').click();
+  //Finding green icon
+  cy.get('#NATC_SMART_WAGON_CONF_MSG_SUCCESS > .a-box > .a-box-inner > .a-icon').should(`be.visible`);
+  //Verifying also with the string
+  cy.get('.a-size-medium-plus').should(`contain`, `Agregado al carrito`)
+  //Going back to be able to repeat all the loop again.
+  cy.go(`back`);
+  //this avoid the error triggered bu the click method.
+  cy.once('uncaught:exception', () => false);
+  cy.wait(2000);
+  cy.go(`back`);
+  //Verifying that we are correcltly in the main menu
+  cy.get('.s-no-outline > .a-row > .a-size-base').should(`be.visible`);
+  //this avoid the error triggered bu the click method.
+  cy.once('uncaught:exception', () => false);
+}else{
+  cy.log(`There weren't matched strings, ${textTitle}`)
+  }
+})
+*****************************************************************************
+
+queda en support/commands.js
+
+Cypress.Commands.add('selectProduct', (strTitle) => { codigo anterior pegado aca }
+
+
+                   -------    Archivo Cypress.config.js -------------
+
 Este archivo brinda acceso globalmente a todos el framework
 Dentro de ese Archivo, podemos escribir los comandos que estan
 dentro de la interfaz de cypress-->Project Settings
 Si queremos cambiar la carpeta donde se guardan las screenshots
 llamamos a esa screenshotFolder y le reasignamos un path.
+
+
 
 /////////////////////////////////////    SELECTORES   /////////////////////////////////////////////////
 Click derecho sobre la web xra abrir consola->Inspect->Element
@@ -82,11 +194,40 @@ Se puede importar XPAth
 ///////////////////////////////////////   Assersions   /////////////////////////////////////////////////////
 https://docs.cypress.io/guides/references/assertions
 
-----------------------------------------------SHOULD---------------------------------
+---------------------------------------------- METODO SHOULD---------------------------------
+Syntax;
+.should(chainers)
+.should(chainers, value)
+.should(chainers, method, value)
+.should(callbackFn)
+
+chainers(String)
+Cualquier cadena válida que provenga de Chai o Chai-jQuery o Sinon-Chai.
+Chai -> https://docs.cypress.io/guides/references/assertions#Chai
+Chai-JQuery -> https://docs.cypress.io/guides/references/assertions#Chai-jQuery
+Sinon-Chai -> https://docs.cypress.io/guides/references/assertions#Sinon-Chai
+
+value(String)
+Valor a hacer valer contra el encadenador.
+
+method(String)
+Un método que se llamará en el encadenador.
+
+callbackFn(Function)
+Pase una función que pueda tener cualquier cantidad de afirmaciones explícitas dentro de ella.
+Lo que se pasó a la función es lo que se obtiene.
 
 https://docs.cypress.io/guides/references/assertions#Length
 *** .should("have.length", 40);
      Verifica si deberia tener un largo de 40
+
+El should(`have.`) son Chai-Jquery y puede ir seguido de:
+    have.a // have.attr // have.text // have.name // have.value // have.length // have.css //
+    have.class // have.id // have.be.checked // have.be.visible // have.be.disabled // have.be.readonly
+    have.be.focused // have.be.hidden // have.be.enabled // have.be.selected // have.be.focused//
+    have.    
+
+
 *** .shoult(`exist`) or .should(`not.exist`)
     Verifica si un elemento existe en el DOM.
 
@@ -166,6 +307,17 @@ Luego de un cy.get, podemos hacer un .click()
 Si este click esta dentro de un .each, tendremos que usar cy.wrap.
 
 
+-----------------------------METODO type --------------------------------------------------
+Te sirve para seleccionar un elemento y escribir alli
+
+cy.get(`.field`).type("Holaaaa");
+
+-----------------------------METODO clear--------------------------------------------------
+Te sirve para limpiar el campo.
+
+cy.get(`.field`).clear()
+
+
 ----------------------------  METODO GET-----------------------------------------------------------------------------------
 Nos traer el objeto de la pagina web.
 
@@ -198,10 +350,16 @@ Con esto puedo refrescar toda la pagina.
     cy.reload
 
 
----------------------------------- METODO INVOKE -------------------------------
+---------------------------------- METODO INVOKE JQ -------------------------------
+Es una metodo de Jquery no de cypress.
+Invoke lo que hace es invocar una funcion, puede tener dos parametros, un parametro invocando a la funcion
+JQuery y el segundo parametro dandole un valor a esa funcion invocada.
 Con este elemento puedo extraer el texto de un elemento
+
     .invoke(`text`)
-    
+Tambien puedo eliminar atributos del DOM
+
+.invoke(`removeAttr`,`target`)
 
 ------------------------------------  METODO .EACH -------------------------------
 
@@ -249,12 +407,32 @@ cy.get(".products").as("productLocator");
         }
       });
 
--------------------------------METODO INVOKE--------------------------------
+-------------------------------  METODO INVOKE  JQ --------------------------------------------
+
+INVOKE SIRVE PARA EJECUTAR FUNCIONES JQUERY, por ejemplo, si quiero llamar a un comando que me imprima el texto debo
+escribir texto = cy.get('#miElemento').invoke('text');
+
 Sirve para extraer el texto de un elemento.
 
   cy.get('#miElemento').invoke('text').then(texto => {
   expect(texto).to.include('ejemplo');
+
 });
+                          --- MEOTODO INVOKE  -> HOVER con SHOW JQ----
+                          https://docs.cypress.io/api/commands/invoke
+
+Si quiero que me muestre un objeto invisible, como un dropdown, funciona como hover.
+Lo que hara sera mostrarme todos los metodos ocultos.
+
+debo colocar: cy.get('#miElemento').invoke('show');
+
+SE VA A APLICAR A LOS HIJOS inmediatos DE ESE ELEMENTO.
+
+Mouse hover, no esta soportado por cypress, podemos manejarlo con Jquery
+utilizando el show method QUE ESTA DENTRO DE INVOKE
+
+PARA CORRER COMANDOS DE JQUERY debemos usar invoke
+
 
 ------------------------------METODO CHECK--------------------------------------
 
@@ -359,14 +537,100 @@ Esos son los hooks, todo lo que se encuentre en ese bloquye ocurrira antes, desp
 y despues de cada it block.
 Sirve para eliminar catche, o cerrar el browser.
 
+////////////////////////////////////////////  ALERT /////////////////////////////////////////////////////////
+
+Si queremos verificar alertas cypress tambien tiene un metodo .alert()
+SI queremos verificar el texto de la alerta debemos manejarlo con un evento, window:alert.
+eso es algo relacionado con el browser no con cypress.
+
+Las alertas no necesariamente necesitan ser llamadas con .alert()
+Las alertas suceden con un .click() en algun elemento.
+
+        ----------  window:alert  ----------
+
+cy.on(`window:alert`, (text) => {
+})
+
+Cy.on, lo que hace es:
+Primer parametro, captura el evento, window:alert es uno de ellos.
+Segundo parametro, captura la respusta en un string y sobre ella podemos hacer algo
+    Aqui es donde empieza a esperar que se cumpla la promesa.
+
+Usaremos MOCHA ACA,
+¿COMO COMPARAR DOS STRINGS EN MOCHA'
+expect(`text`).to.equal(`text`)
+
+cy.on(`window:alert`, (text) => {
+  expect(`text`).to.equal(`text`)
+})
+
+        ----------  window:confirm  ----------
+
+Otro evento es confirm, que aparece igual que alert pero es de confirmacion.
+
+//////////////////////////////////////  CAMBIAR DE VENTANA ////////////////////////////////////////
+
+Cuando estamos trabajando y se abre una ventana en paralelo, una ventana hija, la vamos a manejar asi:
+En cypress NO SE PUEDE CAMBIAR A LA VENTANA HIJA, CHILD WINDOW.
+Hay un workaround, pero NO RESUELVE EL PROBLEMA DEL TODO.
+
+TIP;
+Tendremos que hacer que la aplicacion cargue a la pagina hija, como la pagina actual, en vez de que
+lo abra en una pestaña separada.
+Hay un atributo llamado target, dentro de la etiqueta a, que tiene valor; _blank, _self, _parent, _top, o una URL
+que tiene la accion de abrir en una pestaña nueva esa pagina.
+
+Lo que podemos hacer acá es utilizar cypress con JQuery para remover el atribute target e invocar el DOM nuevamente
+Ésto lo que hara al ser removida y ser cliqueada, será cargar la pagina en el mismo tab.
+
+utilizaremos el metodo invoke, estamos invocando una funcion, la funcion que queremos en Jquery es removeAttr.
+Como segundo parametro le pasaremos el atributo target que queremos eliminar.
+
+cy.get(`.classWithTarget`).invoke(`removeAttr`, `target`).click()
+
+Una vez que hayamos abierto la nueva pagina, para que no haya error de dominio cruzado debemos ejecutar todas las acciones
+de la nueva ventana dentro de un comando llamado origin
+
+cy.origin(`NEW URL`, ()=>{
+  cy......
+}
+
+/////////////////////////////////// WEB TABLES ////////////////////////////////////////////
+
+
+
+///////////////////////////////////  IFRAME ////////////////////////////////////////////
+iFrame es un html metido en otro html, para poder manipular este tipo de cosas debemos utilizar un plugin llamado cypress-iframe
+Debemos instalarlo estando parados en la direccion de carpeta en donde este el .node_modules.
+
+npm install -D cypress-iframe
+
+Luego debemos importar en la parte de arriba del todo del .js copiando y epgando estas lienas de codigo:
+import 'cypress-iframe';
+
+Si queremos que nos haga sugerencias sobre la utilizacion de iframe debemos copiar esta linea de codigo:
+/// <reference types="Cypress-iframe" />
+
+Vamos a utilizar esto cuando veamos una etiqueta en el DOM de iframe, si necesitamos interactuar con eso vamos a utilizar el plugin.
+<iframe ...
+
+Para activar el plugin debemos hacerlo con ---------------------------> cy.frameLoaded()
+Luego debemos decirl que vamos a cambiar al modo iframe escirbiendo ---> cy.iframe()
+Luego, vamos a colocar que queremos buscar el id, div, class... etc---->cy.ifram().find(`selector`)
+Chropath no es capaz de encontrar los elementos dentro del iframe
 
 */
+"use strict"; 
+/// <reference types="Cypress" />
+/// <reference types="Cypress-iframe" />
+import 'cypress-iframe';
 //test suite
 describe("TESTING AMAZON WEBPAGE", () => {
   //test case
-beforeEach(() => {
-  cy.visit("https://www.amazon.com/");
-});
+  beforeEach(() => {
+    //Implementing commands on Support/commands.js folder, file.
+    cy.switchLang(`ES`);
+  })
 
   it.skip("PASS- Visiting the website", () => {
       //test step
@@ -377,7 +641,7 @@ beforeEach(() => {
   it.skip("FAIL- Login - IMPOSIBLE TO CHECK CODE", () => {
       //test step
       //Going into Amazon -> with before each hook
-       // cy.visit("https://www.amazon.com/");
+      cy.visit("https://www.amazon.com/");
       cy.get("#nav-link-accountList > span > span").click()
       cy.get("#createAccountSubmit").click();
       cy.get("#ap_customer_name").type("Pablotest");
@@ -385,6 +649,22 @@ beforeEach(() => {
       cy.get("#ap_password_check").type("test2024");
       cy.get("#ap_email").type("pablolarnaudiedrive2@gmail.com");
       cy.get("#continue").click();
+      cy.visit('https://accounts.google.com')
+      cy.origin('https://accounts.google.com', ()=>{
+        cy.get("#identifierId").type("pablolarnaudiedrive2@gmail.com")
+        cy.get("#identifierNext > div > button > span").click();
+        cy.get(".WpHeLc").click();
+        setTimeout(()=>{
+        cy.get("#identifierId").type("pablolarnaudiedrive2@gmail.com")
+        cy.get("#identifierNext > div > button > span").click();
+        cy.get(".WpHeLc").click();
+        },4000);
+        cy.get("#identifierId").type("pablolarnaudiedrive2@gmail.com")
+        cy.get("#identifierNext > div > button > span").click();
+        cy.get(".WpHeLc").click();
+        cy.get("#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input").type("t******Y");
+        cy.get("#passwordNext > div > button > span").click();
+      })
   })
 
   it.skip(`FAIL- Verifing code to log-in - IMPOSIBLE TO ACCESS TO THE eMAIL`, ()=>{
@@ -513,7 +793,7 @@ beforeEach(() => {
     cy.get('.a-truncate-cut').invoke(`text`).should(`contain`, `Google Pixel`)
   })
 
-  it.skip("PASS- Testing adding some items to a chart-ERRORS", ()=>{
+  it.skip("PASS- Testing adding some items to a chart", ()=>{
         //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
         //will made a refreash to solve the problem of catch a different search bar
@@ -534,7 +814,11 @@ beforeEach(() => {
       //cy.get(".s-main-slot").find(`[data-asin]`).should("have.length",41)
       
       //Here I obtain 24 pieces of content, each should iterate by each element
-      cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
+      //this code are beiing implemented in the support/commands.js -> addToCart
+    const ignoredItems = [];
+    let addedItems = [];
+
+    cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
         
         //Remember, this can't be handeld by cypress itself
         const textTitle = $el.text();
@@ -544,36 +828,51 @@ beforeEach(() => {
 
         //Veryfing in console the value of the $el
         cy.log(textTitle);
+
         //Adding some logic to select ONLY the items with the following string
-        if(textTitle.includes(`Google Pixel 8`)){
+        if(textTitle.includes(strTitle) && addedItems.length <= 1){
             //this avoid the error triggered bu the click method.
-            cy.once('uncaught:exception', () => false);
+            //cy.once('uncaught:exception', () => false);
+
             //Applying the THEN method to handle the variable out of cypress.
-            cy.get($el).find(`a.a-link-normal`).then((btn)=>{
+            cy.get(`h2 a[class*="a-link-normal s-underline-text"]`).eq(index).then((btn)=>{
+
             //this avoid the error triggered bu the click method.
-            cy.once('uncaught:exception', () => false);
+            //cy.once('uncaught:exception', () => false);
+
             //remember we need to wrap $el or btn parameter to do click on it,
             cy.wrap(btn).click();
             });
+
             //Adding items to a chart
             cy.get('#add-to-cart-button').click();
+
             //Finding green icon
             cy.get('#NATC_SMART_WAGON_CONF_MSG_SUCCESS > .a-box > .a-box-inner > .a-icon').should(`be.visible`);
+            
             //Verifying also with the string
             cy.get('.a-size-medium-plus').should(`contain`, `Agregado al carrito`)
+             addedItems.push({index, textTitle});
+             cy.log(addedItems);
+             cy.log(`index: ${index} of ${textTitle} added, length now is ${addedItems.length}`);
+
             //Going back to be able to repeat all the loop again.
             cy.go(`back`);
+            
             //this avoid the error triggered bu the click method.
             cy.once('uncaught:exception', () => false);
             cy.wait(2000);
             cy.go(`back`);
+            
             //Verifying that we are correcltly in the main menu
             cy.get('.s-no-outline > .a-row > .a-size-base').should(`be.visible`);
+            
             //this avoid the error triggered bu the click method.
             cy.once('uncaught:exception', () => false);
-
           }else{
-          cy.log(`There weren't matched strings, ${textTitle}`)
+            ignoredItems.push({index, textTitle});
+            cy.log(`The index: ${index} called ${textTitle} was added to ignored items list`)
+            cy.log(ignoredItems);
         }
       })
   })
@@ -677,7 +976,7 @@ beforeEach(() => {
       //We need the selector of the checkbox that also has another value to decide which one should be selected. 
       //In Amazon, there's no selector with values, only with the checkbox's selector, so it's imposible to decide
       //which one could be selected or not.
-    })
+  })
 
   it.skip("Rahul shetty - Testing multiple checkboxes", function () {
     //Check boxes
@@ -702,7 +1001,7 @@ beforeEach(() => {
     cy.get("#autocomplete").type("ind");
   });
 
-  it("Testing dropdowns on Amazon",()=>{
+  it.skip("PASS - Testing dropdowns on Amazon",()=>{
     //We have two types of dropdowns Statics and dynamic.
 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
@@ -742,8 +1041,118 @@ beforeEach(() => {
     cy.get('.a-dropdown-prompt').should(`contain`, `Los más vendidos`);	
   });
   
-  it("Testing popup on Amazon", ()=>{
+  it.skip("PASS - Testing the Hover function with SHOW", ()=>{
+    
+  cy.visit("https://www.amazon.com/");
+
+  cy.reload()
+  
+    cy.get('#nav-flyout-icp').invoke(`show`).find(`.nav-flyout-content`).invoke(`show`)
+    cy.contains(`DE`).click({force: true});
+    cy.wait(2000)
+  })
+
+  it.skip("Rahul shetty - Testing iFrames", ()=>{
+    //iFrame it's a HTML document embedded in another HTML document
+    //we need to install a plug-in -> npm install -D cypress-iframe and import it: import `cypress-iframe`
+
+    //We use iFrames when the ebpage have the iframe tag on it and we need to interact with it.
+    //to enable it to use it we need to call cy.frameLoaded();
+
+    cy.visit("https://rahulshettyacademy.com/AutomationPractice/");
+    cy.frameLoaded(`#courses-iframe`)
+    //we need to tell cypress that have to switch to iframe mode with cy.frame
+    //then, we need to pass there the class, id... that exist in the iframe.
+    //CHROPATH extention, is not able to find the elements inside the iframe
+    cy.iframe().find(`a[href*="mentorship"]`).eq(0).click();
+    //cy.iframe().find("h1[class*=`pricing-title`]").should(`have.length`, 1);
+  })
+
+});
+
+//USAR IT CON FUNCTION(){})!! NO CON ()=>{}
+describe("Testing Amazon, improving new methodologies", ()=>
+{
+  beforeEach(function(){
+    cy.fixture("example").then(function(data){
+      this.data = data;
+    });
+    cy.switchLang(`ES`);
+})
+
+  it.skip("Rahul Shetty - fixtures",function(){
+    cy.visit("https://rahulshettyacademy.com/angularpractice/");
+    //Otra forma de llama al selector:
+    cy.get('input[name="name"]:nth-child(2)').type(this.data.name);
+    cy.get("select").select(this.data.gender);
+    cy.get("body > app-root > form-comp > div > h4 > input").should(
+      "have.value",
+      this.data.name
+    );
+    cy.get('input[name="name"]:nth-child(2)').should(
+      "have.attr",
+      "minlength",
+      2
+    );
+    cy.get("#inlineRadio3").should("be.disabled");
+    cy.get(
+       "body > app-root > app-navbar > div > nav > ul > li:nth-child(2) > a").click();
+  
+  });
+
+  it.skip("Amazon with fixtures - Login assertions",function(){
+    cy.visit(this.data.urlAmazon);
+    //Searching phone on search field
+    cy.get("#twotabsearchtextbox").type(this.data.searchPhone);
+    cy.get("#nav-link-accountList > span > span").click()
+    cy.get("#createAccountSubmit").click();
+    cy.get("#ap_customer_name").type(this.data.username);
+    cy.get("#ap_email").type(this.data.email);
+
+    //Veryifing if the password matches
+    cy.get("#ap_password").type(this.data.userPass);
+    cy.get("#ap_password_check").type(this.data.shortPass);
+    cy.get("#continue").click();
+    cy.get('#auth-password-mismatch-alert > .a-box-inner > .a-alert-content:visible').should(`contain`,`Las contraseñas no coinciden`)
+
+    //Veryfing if the password have lengh of 6 min.
+    cy.get("#ap_password").clear().type(this.data.shortPass);
+    cy.get("#ap_password_check").clear().type(this.data.shortPass);
+    cy.get("#continue").click();
+    cy.get('#auth-password-invalid-password-alert > .a-box-inner > .a-alert-content').should(`contain`,`Se requiere un mínimo de 6 caracteres`).and(`have.css`,"7");
+    cy.get("#ap_password").clear().type(this.data.userPass);
+    cy.get("#ap_password_check").clear().type(this.data.userPass);
+    cy.get('#auth-password-invalid-password-alert > .a-box-inner > .a-alert-content').should(`not.have.text`,`Se requiere un mínimo de 6 caracteres`);
+
+    //Vertyfing if accepts a email.
+    cy.get("#ap_email").clear().type(this.data.email).should(`have.attr`,`type`,`email`);
+
+    //Veryfing if accepts a number phone.
+    cy.get("#ap_email").clear().type(this.data.phoneNum);
+    cy.get('.country-display-text').click();
+    cy.get('.a-popover-inner ul li a').each(($el, index, $list)=>{
+      const [country, ...num] = $el.text().split(` `);
+      cy.log(country)
+      if((`${country} `) === this.data.country){
+        cy.wrap($el).click();
+      }else{
+        cy.log($el.text() + ` is not equal to ${this.data.country}`)
+      }
+    })
+  });
+
+  it("Amazon with fixtures - Selecting items",function(){
+    cy.visit(this.data.urlAmazon);
+    cy.reload();
+    //Searching the phone.
+    cy.get("#twotabsearchtextbox").type(this.data.searchPhone)
+    cy.get(`#nav-search-submit-button`).click();
+    
+    cy.findTitle(this.data.searchPhone);
 
   })
 
+  it.skip("Aadding items to a chart with commands",function(){
+    cy.addToCart(this.data.searchPhone)
+  })
 })
