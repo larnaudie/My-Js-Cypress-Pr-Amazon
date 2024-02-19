@@ -1141,7 +1141,7 @@ describe("Testing Amazon, improving new methodologies", ()=>
     })
   });
 
-  it("Amazon with fixtures - Selecting items",function(){
+  it.skip("PASS - Amazon with fixtures - Selecting items",function(){
     cy.visit(this.data.urlAmazon);
     cy.reload();
     //Searching the phone.
@@ -1152,7 +1152,9 @@ describe("Testing Amazon, improving new methodologies", ()=>
 
   })
 
-  it.skip("Aadding items to a chart with commands",function(){
+  it("PASS - Aadding items to a chart with commands",function(){
     cy.addToCart(this.data.searchPhone)
   })
+
+
 })

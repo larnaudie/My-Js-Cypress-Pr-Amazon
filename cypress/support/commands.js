@@ -79,6 +79,7 @@ Cypress.Commands.add('switchLang', (lang) => {
 })
 
 Cypress.Commands.add('findTitle', (strTitle) => {
+  /*
     const item = cy.get("[data-asin]").find('h2.a-size-mini')
     item.each(($el, index, $list) => {
         
@@ -99,7 +100,36 @@ Cypress.Commands.add('findTitle', (strTitle) => {
         }else{
             cy.log(`There weren't matched strings, ${textTitle}`)
         }
-    })
+    })*/
+
+    //This was written by ChatGPT
+    //Creates an empty array to store all the valid elements
+    let matchingTitles = [];
+
+    //We accessed to the selector that contains all texts and stored them into a variable textTitle
+    cy.get("[data-asin]").find('h2.a-size-mini:visible').each(($el, index, $list) => {
+      const textTitle = $el.text();
+
+      //to verify the text, we prefered to log it in the console.
+     cy.log(textTitle);
+
+     //Conditional logic -> if the textTitle contains the strTitle, we log it
+      if (textTitle.includes(strTitle)) {
+         cy.log(textTitle);
+         //if the $el contains the text, we store it in the variable matchingTitles.
+          matchingTitles.push(textTitle);
+     } else {
+          cy.log(`There weren't matched strings, ${textTitle}`);
+      }
+    }).then(() => {
+      // Rprint in the cypress console, the number of elements that contain the array
+      cy.log('Matching titles:', matchingTitles);
+
+      // Ahora puedes realizar más acciones o devolver la variable si es necesario en algún contexto externo
+      // Por ejemplo, puedes realizar una nueva aserción con los elementos coincidentes
+      expect(matchingTitles).to.have.length.above(0);
+      console.log(matchingTitles)
+     });
 })
 
 Cypress.Commands.add('addToCart', (strTitle) => {
