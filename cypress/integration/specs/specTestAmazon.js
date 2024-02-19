@@ -164,6 +164,72 @@ Si queremos cambiar la carpeta donde se guardan las screenshots
 llamamos a esa screenshotFolder y le reasignamos un path.
 
 
+//////////////////////////////////// Page object Design ///////////////////////////////////////////
+
+                         -------    Carpeta Page Object Model -------------
+
+1) Esta carpeta la crearemos nosotros a mano ubicada dentro de la carpeta de integration, al lado de la carpeta specs., y sera la que utilicemos para almacenar los selectores de
+cada pagina html, a esto se le conoce como POM, Page Object Model.
+
+Cada vez que nuestra web se recargue entera, significa que estamos en una pagina nueva, esa pagina nueva,
+ tendra sus propios selectores, entonces esa pagina tendrá su clase de Page Object Model.
+Generalmente cambia el endopoint, por cada endpoint tenemos una clase con los selectores de esa pagina..
+
+2) Vamos a colocarle el nombre del archivo .js como el endpoint o algo que identifique que pagina es.
+
+3) dentro del archivo .js, creamos una clase con el nombre del .js
+Ejemplo:
+
+class HomePage {
+}
+
+4) En la parte inferior, para hacer accessible globalmente e todo el framework el .js debemos escribir:
+export default Homepage;
+
+5) En el archivo spec, vamos a tener que importar este archivo, por ende en la parte superior debemos escribir:
+
+import HomePage from '../pageObjects/HomePage.js';
+
+Comentario: con ../ retrocedemos un lugar en la carpeta.
+            con ../../ retrocedemos dos lugares en la carpeta.
+
+6) Alli, dentro de HomePage class, vamos a colocarle todos los selectores de la pagina.
+  Tenemos que colocarle el nombre al metodo que sea facilmente reconocible con el evento asociado.
+  Luego lo que va a retornar será el selector.
+
+class HomePage {
+
+  //selector del campo de busqueda.
+  searchBar() {
+    return cy.get('#twotabsearchtextbox');
+  }
+
+  //selector del boton submit
+  btnSubmit() {
+    return cy.get(`#nav-search-submit-button`)
+  }
+}
+
+7) Debemos ahora ir a nuestro archivo spec y alli debemos crear un objeto HomePage.
+    Tuvimos que importarlo, pero solo con eso no es suficiente.
+    Ahora tenemos que crear un objeto HomePage con la palabra New, debajo del it bloque.
+
+  it("Testing on Amazon", function () {
+
+      //Esto creara un nuevo objeto de HomePage y lo almacenara y guardara
+      //para llamar a sus metodos con homepage.
+      const homePage = new HomePage();
+    ))
+  
+8) Para invocar a sus metodos, debemos acceder al objeto primero.
+
+it("Testing on Amazon", function () {
+    const homePage = new HomePage();
+
+    homePage.searchBar().type(this.data.searchPhone[0]);
+    homePage.btnSubmit().click();
+  
+  ));
 
 /////////////////////////////////////    SELECTORES   /////////////////////////////////////////////////
 Click derecho sobre la web xra abrir consola->Inspect->Element
@@ -388,11 +454,12 @@ cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
 })
 
 
------------------------------- METODO INCLUDES -----------------------------------
+------------------------------ METODO INCLUDES JQ  -----------------------------------
 INCLUDES es un metodo de Javascript.
 
 
-------------------  METODO TEXT NO ES UN COMANDO DE CYPRESS--------------------------
+------------------  METODO TEXT NO ES UN COMANDO DE CYPRESS JQ  --------------------------
+
 Sirve para extraer el texto de un elemento, podemos guardarla en una variable para sarla.
 AL NO SER COMANDO DE CYPRESS SE DEBE MANEJAR COMO PROMESA.
 
@@ -407,7 +474,7 @@ cy.get(".products").as("productLocator");
         }
       });
 
--------------------------------  METODO INVOKE  JQ --------------------------------------------
+-------------------------------  METODO INVOKE  JQ  --------------------------------------------
 
 INVOKE SIRVE PARA EJECUTAR FUNCIONES JQUERY, por ejemplo, si quiero llamar a un comando que me imprima el texto debo
 escribir texto = cy.get('#miElemento').invoke('text');
@@ -434,7 +501,7 @@ utilizando el show method QUE ESTA DENTRO DE INVOKE
 PARA CORRER COMANDOS DE JQUERY debemos usar invoke
 
 
-------------------------------METODO CHECK--------------------------------------
+------------------------------  METODO CHECK  --------------------------------------
 
 **** Debemos obtener el selector del checkbox y sobre el le aplicamos el metodo check()
 
@@ -453,17 +520,20 @@ Ejemplo:
 cy.get(`input[type=`checkbox`]`).check([`option2`,`option1`])
 
 
-------------------------------METODO UNCHECK--------------------------------------
+------------------------------  METODO UNCHECK  --------------------------------------
+
 //Selecting Google checkbox
     cy.get(`#p_89\/Google > span > a > div > label > i`).uncheck();
 
 
-------------------------------METODO AS-------------------------------------------
+------------------------------  METODO AS  -------------------------------------------
+
 En vez de guardar todo un selector con un const o let, podemos y DEBEMOS usar as,
 luego para llamarlo lo arrobamos antes del nombre que le dimos
 
 
------------------------------       METODO SELECT --------------------------------
+-----------------------------       METODO SELECT   --------------------------------
+
 Simplemente tenemos que escribir dentro de select el valor que va a contenter, 
 es decir el texto que tiene dentro
 NO ADMITE OTRO QUE NO SEA
@@ -476,6 +546,24 @@ Si tengo en el DOM_
 
 Alli con decirle asi, lo estaremos sleeccionando:
 cy.get(`select`).select(`Alexa Skills`)
+
+
+
+-----------------------------       METODO PAUSE   --------------------------------
+
+Este metodo nos permite poner pausa en un punto del codigo para poder debagguear, inspeccionar el codigo
+hasta un punto.
+https://docs.cypress.io/api/commands/pause
+
+cy.pause();
+
+Podemos continuar nuestra ejecucion, dandole click al boton resume en cypress, o 
+Si quiero hacer que corra el siguiente comando y se ponga en pausa de nuevo puedo hacer click en el icono
+>| 
+
+Next: 'click
+
+Tambien tenemos la palabra reservada .debug(), para hacer un breakpoint, pero hace lo mismo que pause
 
 
 ///////////////////////////// DROPDOWNS PIQUES ///////////////////////////////
@@ -516,6 +604,25 @@ cy.get(`.ui-menu-item-wrapper div`).each(($el, index, $list) => {
 
 
 ////////////////////////  JQUERY IN CYPRESS  ////////////////////////////////////////////
+
+-------------------------- JQ METODO FOREACH ----------------------------------
+
+Para iterar sobre un array en javascript podemos usar forEach, que lo que hace sera recorrer
+ cada elemento del array.
+
+const myArray = [1, 2, 3, 4, 5];
+
+myArray.forEach((element) => {
+  console.log(element);
+})
+
+Esto va a imprimir 1, 2, 3, 4 y 5.
+Esto de aca abajo va a escribir cada elemento del array y luego limpiarlo.
+
+myArray.forEach((phone)=>{
+  cy.get('#twotabsearchtextbox').clear();
+  cy.searchProduct(phone)
+})
 
 ---------------------JQUERY METHOD: TEXT----------------------------------
 TEXT es un metodo que esta dentro de Jquery en Cypress, soporta jquery metods, y text es un metodo de jquery.
@@ -619,11 +726,16 @@ Luego debemos decirl que vamos a cambiar al modo iframe escirbiendo ---> cy.ifra
 Luego, vamos a colocar que queremos buscar el id, div, class... etc---->cy.ifram().find(`selector`)
 Chropath no es capaz de encontrar los elementos dentro del iframe
 
+
+
 */
 "use strict"; 
 /// <reference types="Cypress" />
 /// <reference types="Cypress-iframe" />
 import 'cypress-iframe';
+//ESTO ESTA ROMPIENDO TODO
+import HomePage from '../pageObjects/HomePage.js';
+
 //test suite
 describe("TESTING AMAZON WEBPAGE", () => {
   //test case
@@ -632,7 +744,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.switchLang(`ES`);
   })
 
-  it.skip("PASS- Visiting the website", () => {
+  it("PASS- Visiting the website", () => {
       //test step
       //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
@@ -696,7 +808,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get("#declineButton").click();*/
   })
 
-  it.skip("PASS- Testing the search bar", ()=>{
+  it("PASS- Testing the search bar", ()=>{
     //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
     //typing in the search bar google pixel 8
@@ -707,7 +819,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get("[data-asin]").should("have.length",31)
   })
 
-  it.skip("PASS- Catching the Amazon logo", ()=>{
+  it("PASS- Catching the Amazon logo", ()=>{
     //Going into Amazon -> with before each hook
        //  cy.visit("https://www.amazon.com/");
     //Trying to get the Amazon logo. AND SAVING IT INTO A VARIABLE
@@ -763,7 +875,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
 
   })
 
-  it.skip("PASS- Testing adding an item to a chart", ()=>{
+  it("PASS - Testing adding an item to a chart", ()=>{
     //Going into Amazon -> with before each hook
        //  cy.visit("https://www.amazon.com/");
       //will made a refreash to solve the problem of catch a different search bar
@@ -793,7 +905,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get('.a-truncate-cut').invoke(`text`).should(`contain`, `Google Pixel`)
   })
 
-  it.skip("PASS- Testing adding some items to a chart", ()=>{
+  it("Fail - Testing adding some items to a chart", ()=>{
         //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
         //will made a refreash to solve the problem of catch a different search bar
@@ -877,7 +989,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
       })
   })
 
-  it.skip("PASS- Testing the UI of the items within the list", ()=>{
+  it("Fail - Testing the UI of the items within the list", ()=>{
     //Going into Amazon -> with before each hook
     //cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
@@ -898,7 +1010,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     });
   })
 
-  it.skip("PASS- Optimization of the last test case", ()=>{
+  it("PASS- Optimization of the last test case", ()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     
@@ -925,7 +1037,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     });
   })
 
-  it.skip("PASS- Testing checkboxes on Amazon",()=>{
+  it("PASS- Testing checkboxes on Amazon",()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     //cy.visit("https://www.amazon.com/");
@@ -953,7 +1065,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.wait(3000);
   });
 
-  it.skip("PASS- Testing with multiple checkboxes on Amazon", ()=>{
+  it("PASS- Testing with multiple checkboxes on Amazon", ()=>{
       //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
       //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
@@ -1001,7 +1113,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get("#autocomplete").type("ind");
   });
 
-  it.skip("PASS - Testing dropdowns on Amazon",()=>{
+  it("PASS - Testing dropdowns on Amazon",()=>{
     //We have two types of dropdowns Statics and dynamic.
 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
@@ -1041,7 +1153,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get('.a-dropdown-prompt').should(`contain`, `Los más vendidos`);	
   });
   
-  it.skip("PASS - Testing the Hover function with SHOW", ()=>{
+  it("PASS - Testing the Hover function with SHOW", ()=>{
     
   cy.visit("https://www.amazon.com/");
 
@@ -1100,7 +1212,7 @@ describe("Testing Amazon, improving new methodologies", ()=>
   
   });
 
-  it.skip("Amazon with fixtures - Login assertions",function(){
+  it("Fail - Amazon with fixtures - Login assertions",function(){
     cy.visit(this.data.urlAmazon);
     //Searching phone on search field
     cy.get("#twotabsearchtextbox").type(this.data.searchPhone);
@@ -1141,20 +1253,43 @@ describe("Testing Amazon, improving new methodologies", ()=>
     })
   });
 
-  it.skip("PASS - Amazon with fixtures - Selecting items",function(){
+  it("PASS - Amazon with fixtures - Selecting items",function(){
     cy.visit(this.data.urlAmazon);
     cy.reload();
     //Searching the phone.
-    cy.get("#twotabsearchtextbox").type(this.data.searchPhone)
+    cy.get("#twotabsearchtextbox").type(this.data.searchPhone[0])
     cy.get(`#nav-search-submit-button`).click();
     
-    cy.findTitle(this.data.searchPhone);
+    cy.findTitle(this.data.searchPhone[0]);
 
   })
 
   it("PASS - Aadding items to a chart with commands",function(){
+    //We need to search the phone.
+    cy.searchProduct(this.data.searchPhone[0])
+
+    //Here we pass the number 0 of index stored in the array
     cy.addToCart(this.data.searchPhone)
   })
 
+  it("PASS - iterating items from an array in fixtures",function(){
+    this.data.searchPhone.forEach((phone)=>{
+      cy.get('#twotabsearchtextbox').clear();
+      cy.searchProduct(phone);
+    });
+  });
 
+  it("PASS - Debugging with Cypress",function(){
+    //You only need to use .debug() or .pause()
+  })
+
+  it("Page Object Model Design on Amazon",function(){
+    //each page with different endpoint or html that reload the entiere webpage needs
+    //to be created in separated classes.
+    const homePage = new HomePage();
+
+    homePage.searchBar().type(this.data.searchPhone[0]);
+    homePage.btnSubmit().click();
+
+  })
 })
