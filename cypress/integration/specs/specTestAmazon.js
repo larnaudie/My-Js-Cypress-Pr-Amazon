@@ -123,7 +123,7 @@ if(textTitle.includes(`Google Pixel 8`)){
   cy.once('uncaught:exception', () => false);
   //Applying the THEN method to handle the variable out of cypress.
   cy.get($el).find(`a.a-link-normal`).then((btn)=>{
-  //this avoid the error triggered bu the click method.
+  //this avoid the error triggered by the click method.
   cy.once('uncaught:exception', () => false);
   //remember we need to wrap $el or btn parameter to do click on it,
   cy.wrap(btn).click();
@@ -231,7 +231,10 @@ it("Testing on Amazon", function () {
   
   ));
 
+
 /////////////////////////////////////    SELECTORES   /////////////////////////////////////////////////
+
+
 Click derecho sobre la web xra abrir consola->Inspect->Element
 Seleccionando la flechita arriba a la izq. de la consola.
 
@@ -257,8 +260,11 @@ Se puede importar XPAth
     PARA VIAJAR DE PARENT TO CHILD, de PADRE A HIJO en el selector DEBO DEJAR UN ESPACIO.
           EJ; .ui-menu-item-wrapper div
 
+
+
 ///////////////////////////////////////   Assersions   /////////////////////////////////////////////////////
 https://docs.cypress.io/guides/references/assertions
+
 
 ---------------------------------------------- METODO SHOULD---------------------------------
 Syntax;
@@ -311,6 +317,9 @@ El should(`have.`) son Chai-Jquery y puede ir seguido de:
 
 *** Verificar si tiene exactamente el texto impreso en pantalla
     .should(`have.text`,`texto`);
+
+    //Si Cypress te dice al usar have.text obtiene un texto con caracteres como /n o \n, usemos include
+    //con include solamente nos asesoramos de que contenga una parte del texto y no todo por que da error.
 
 *** Hacer varios should juntos no... USAR METODO AND
 
@@ -457,6 +466,26 @@ cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
 ------------------------------ METODO INCLUDES JQ  -----------------------------------
 INCLUDES es un metodo de Javascript.
 
+Si queremos extraer un texto, sabemos que .text no es comando de cypress, sino de Javascript
+Si queremos decir si el texto incluye un caracter, debemos usar .includes, pero sobre el texto.
+
+**********SE DEBE USAR ENTONCES LA PALABRA .THEN para obtener el elemento, extraer su string, almacenarlo y 
+**********verificar con .includes si incluye un caracter.
+
+get(`.alert`).then((element)=>{
+  const text = element.text();
+  if(text.includes(`text`)){
+    cy.wrap(element).click();
+  }
+})
+
+*********COMO ALTERNATVA PODEMOS USAR EL EXPECT DE CHAI
+
+get(`.alert`).then((element)=>{
+
+  const text = element.text();
+  expect(text.include(`Success`)).to.be.true;
+})
 
 ------------------  METODO TEXT NO ES UN COMANDO DE CYPRESS JQ  --------------------------
 
@@ -566,7 +595,9 @@ Next: 'click
 Tambien tenemos la palabra reservada .debug(), para hacer un breakpoint, pero hace lo mismo que pause
 
 
-///////////////////////////// DROPDOWNS PIQUES ///////////////////////////////
+//////////////////////////////////////     DROPDOWNS PIQUES     //////////////////////////////////////////////////////////
+
+
 ------------------------------    Static Dropdown       ------------
 
 
@@ -603,7 +634,7 @@ cy.get(`.ui-menu-item-wrapper div`).each(($el, index, $list) => {
 })
 
 
-////////////////////////  JQUERY IN CYPRESS  ////////////////////////////////////////////
+//////////////////////////////////  JQUERY IN CYPRESS  ////////////////////////////////////////////
 
 -------------------------- JQ METODO FOREACH ----------------------------------
 
@@ -629,7 +660,7 @@ TEXT es un metodo que esta dentro de Jquery en Cypress, soporta jquery metods, y
 No hay un metodo que grabe el texto en cypress.
 JQueary es una herramienta de desarrollo disponible para manipular el DOM.
 
- ///////////////////////////// HOOKS //////////////////////////////////////////
+ //////////////////////////////////////         HOOKS          //////////////////////////////////////////
 
  before(() => {
  })
@@ -644,7 +675,7 @@ Esos son los hooks, todo lo que se encuentre en ese bloquye ocurrira antes, desp
 y despues de cada it block.
 Sirve para eliminar catche, o cerrar el browser.
 
-////////////////////////////////////////////  ALERT /////////////////////////////////////////////////////////
+////////////////////////////////////////////       ALERT         /////////////////////////////////////////////////////////
 
 Si queremos verificar alertas cypress tambien tiene un metodo .alert()
 SI queremos verificar el texto de la alerta debemos manejarlo con un evento, window:alert.
@@ -675,7 +706,7 @@ cy.on(`window:alert`, (text) => {
 
 Otro evento es confirm, que aparece igual que alert pero es de confirmacion.
 
-//////////////////////////////////////  CAMBIAR DE VENTANA ////////////////////////////////////////
+//////////////////////////////////////            CAMBIAR DE VENTANA        ////////////////////////////////////////
 
 Cuando estamos trabajando y se abre una ventana en paralelo, una ventana hija, la vamos a manejar asi:
 En cypress NO SE PUEDE CAMBIAR A LA VENTANA HIJA, CHILD WINDOW.
@@ -702,11 +733,13 @@ cy.origin(`NEW URL`, ()=>{
   cy......
 }
 
-/////////////////////////////////// WEB TABLES ////////////////////////////////////////////
+///////////////////////////////////         WEB TABLES          ////////////////////////////////////////////
 
 
 
-///////////////////////////////////  IFRAME ////////////////////////////////////////////
+///////////////////////////////////           IFRAME         ////////////////////////////////////////////
+
+
 iFrame es un html metido en otro html, para poder manipular este tipo de cosas debemos utilizar un plugin llamado cypress-iframe
 Debemos instalarlo estando parados en la direccion de carpeta en donde este el .node_modules.
 
@@ -728,6 +761,43 @@ Chropath no es capaz de encontrar los elementos dentro del iframe
 
 
 
+////////////////////////////////         DEFAULT SETTINGS          ///////////////////////////////////////
+
+
+
+Dentro de cypress, cuando hagamos heho npm run cypress:open y hayamos abierto el IDE de Cypress, hay un luagar en donde estan los
+comanod seteados por defecot, por ejemplo, settimeout.
+Ingresar a Cypress -> Settings -> Default Settings.
+Alli veremos las configuraciones por defecto de cypress el setTimeout esta por defecto en 4000
+
+defaultCommandTimeout: 4000 
+
+Esa linea anterior, podemos copiarla y pegarla en cypress.config.js
+y alli podemos pegar este comando para modificarlo globalmente y cambiar su valor.
+
+const { defineConfig } = require("cypress");
+module.exports = defineConfig({
+  defaultCommandTimeout: 5000,
+  e2e: {
+    setupNodeEvents(on, config) {
+      // implement node event listeners here
+    },
+    specPattern:`cypress/integration/specs/*.js`,
+  }
+});
+
+**PODEMOS SETEARLO PARA UN CASO PUNTUAL, debemos escribir en el spec, arriba de la linea que quiero modificar ese tiempo global.
+Cypress.config('defaultCommandTimeout', 5000);
+
+
+
+////////////////////////////////////     SUMANDO PRODUCOTS, RECORTAR PRODUCTOS          //////////////////////////////////////
+
+
+
+
+
+
 */
 "use strict"; 
 /// <reference types="Cypress" />
@@ -737,14 +807,14 @@ import 'cypress-iframe';
 import HomePage from '../pageObjects/HomePage.js';
 
 //test suite
-describe("TESTING AMAZON WEBPAGE", () => {
+describe.skip("TESTING AMAZON WEBPAGE", () => {
   //test case
   beforeEach(() => {
     //Implementing commands on Support/commands.js folder, file.
     cy.switchLang(`ES`);
   })
 
-  it("PASS- Visiting the website", () => {
+  it.skip("PASS- Visiting the website", () => {
       //test step
       //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
@@ -808,7 +878,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get("#declineButton").click();*/
   })
 
-  it("PASS- Testing the search bar", ()=>{
+  it.skip("PASS- Testing the search bar", ()=>{
     //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
     //typing in the search bar google pixel 8
@@ -819,7 +889,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get("[data-asin]").should("have.length",31)
   })
 
-  it("PASS- Catching the Amazon logo", ()=>{
+  it.skip("PASS- Catching the Amazon logo", ()=>{
     //Going into Amazon -> with before each hook
        //  cy.visit("https://www.amazon.com/");
     //Trying to get the Amazon logo. AND SAVING IT INTO A VARIABLE
@@ -875,7 +945,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
 
   })
 
-  it("PASS - Testing adding an item to a chart", ()=>{
+  it.skip("PASS - Testing adding an item to a chart", ()=>{
     //Going into Amazon -> with before each hook
        //  cy.visit("https://www.amazon.com/");
       //will made a refreash to solve the problem of catch a different search bar
@@ -905,7 +975,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get('.a-truncate-cut').invoke(`text`).should(`contain`, `Google Pixel`)
   })
 
-  it("Fail - Testing adding some items to a chart", ()=>{
+  it.skip("Fail - Testing adding some items to a chart", ()=>{
         //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
         //will made a refreash to solve the problem of catch a different search bar
@@ -989,7 +1059,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
       })
   })
 
-  it("Fail - Testing the UI of the items within the list", ()=>{
+  it.skip("Fail - Testing the UI of the items within the list", ()=>{
     //Going into Amazon -> with before each hook
     //cy.visit("https://www.amazon.com/");
     //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
@@ -1010,7 +1080,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     });
   })
 
-  it("PASS- Optimization of the last test case", ()=>{
+  it.skip("PASS- Optimization of the last test case", ()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     
@@ -1037,7 +1107,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     });
   })
 
-  it("PASS- Testing checkboxes on Amazon",()=>{
+  it.skip("PASS- Testing checkboxes on Amazon",()=>{
     //When you are using too many time the same label, you can grab it with a new name with as 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
     //cy.visit("https://www.amazon.com/");
@@ -1065,7 +1135,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.wait(3000);
   });
 
-  it("PASS- Testing with multiple checkboxes on Amazon", ()=>{
+  it.skip("PASS- Testing with multiple checkboxes on Amazon", ()=>{
       //Going into Amazon -> with before each hook
        // cy.visit("https://www.amazon.com/");
       //we need refresh with F5 the webpage 'cuz the nav bar appears different sometimes
@@ -1113,7 +1183,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get("#autocomplete").type("ind");
   });
 
-  it("PASS - Testing dropdowns on Amazon",()=>{
+  it.skip("PASS - Testing dropdowns on Amazon",()=>{
     //We have two types of dropdowns Statics and dynamic.
 
     //the reserved label "as" works as a variable const, let, in the meaning that you can grab a value there.
@@ -1153,7 +1223,7 @@ describe("TESTING AMAZON WEBPAGE", () => {
     cy.get('.a-dropdown-prompt').should(`contain`, `Los más vendidos`);	
   });
   
-  it("PASS - Testing the Hover function with SHOW", ()=>{
+  it.skip("PASS - Testing the Hover function with SHOW", ()=>{
     
   cy.visit("https://www.amazon.com/");
 
@@ -1190,6 +1260,7 @@ describe("Testing Amazon, improving new methodologies", ()=>
       this.data = data;
     });
     cy.switchLang(`ES`);
+    cy.log("Before each hook executed");
 })
 
   it.skip("Rahul Shetty - fixtures",function(){
@@ -1212,7 +1283,7 @@ describe("Testing Amazon, improving new methodologies", ()=>
   
   });
 
-  it("Fail - Amazon with fixtures - Login assertions",function(){
+  it.skip("Fail - Amazon with fixtures - Login assertions",function(){
     cy.visit(this.data.urlAmazon);
     //Searching phone on search field
     cy.get("#twotabsearchtextbox").type(this.data.searchPhone);
@@ -1253,7 +1324,7 @@ describe("Testing Amazon, improving new methodologies", ()=>
     })
   });
 
-  it("PASS - Amazon with fixtures - Selecting items",function(){
+  it.skip("PASS - Amazon with fixtures - Selecting items",function(){
     cy.visit(this.data.urlAmazon);
     cy.reload();
     //Searching the phone.
@@ -1264,7 +1335,7 @@ describe("Testing Amazon, improving new methodologies", ()=>
 
   })
 
-  it("PASS - Aadding items to a chart with commands",function(){
+  it.skip("PASS - Aadding items to a chart with commands",function(){
     //We need to search the phone.
     cy.searchProduct(this.data.searchPhone[0])
 
@@ -1272,18 +1343,18 @@ describe("Testing Amazon, improving new methodologies", ()=>
     cy.addToCart(this.data.searchPhone)
   })
 
-  it("PASS - iterating items from an array in fixtures",function(){
+  it.skip("PASS - iterating items from an array in fixtures",function(){
     this.data.searchPhone.forEach((phone)=>{
       cy.get('#twotabsearchtextbox').clear();
       cy.searchProduct(phone);
     });
   });
 
-  it("PASS - Debugging with Cypress",function(){
+  it.skip("PASS - Debugging with Cypress",function(){
     //You only need to use .debug() or .pause()
   })
 
-  it("Page Object Model Design on Amazon",function(){
+  it.skip("Page Object Model Design on Amazon",function(){
     //each page with different endpoint or html that reload the entiere webpage needs
     //to be created in separated classes.
     const homePage = new HomePage();
@@ -1291,5 +1362,14 @@ describe("Testing Amazon, improving new methodologies", ()=>
     homePage.searchBar().type(this.data.searchPhone[0]);
     homePage.btnSubmit().click();
 
+  })
+
+  it("Sum products on Amazon", function () {
+    const homePage = new HomePage();
+    //We need to search the phone.
+    cy.searchProduct(this.data.searchPhone[1])
+    cy.addToCart(this.data.searchPhone[1]);
+    //Here we pass the number 0 of index stored in the array
+    //cy.addToCart(this.data.searchPhone)
   })
 })

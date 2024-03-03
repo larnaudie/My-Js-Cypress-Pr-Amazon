@@ -13,7 +13,6 @@
 // Cypress.Commands.add('login', (email, password) => { ... })
 
 Cypress.Commands.add('searchProduct', (strTitle) => {  
-
    //will serch for the search bar
    cy.get('#nav-search');
    //typing in the search bar google pixel 8
@@ -25,6 +24,7 @@ Cypress.Commands.add('searchProduct', (strTitle) => {
 
     //verifiaing that should have 31 items inside attribute data-asin indie .s-main
     cy.wait(3000) //-> will wait for 3 seconds.
+    cy.log("searchPrduct finished")
 })
 
 Cypress.Commands.add('switchLang', (lang) => {
@@ -40,12 +40,14 @@ Cypress.Commands.add('switchLang', (lang) => {
           cy.log(`${$el.text()} contains the text español`)
           $el.click();
           cy.get(`input[aria-labelledby="icp-save-button-announce"]`).should(`have.class`,`a-button-input`).click()
+          cy.wait(3000)
         }else{
           cy.log(`_${$el.text()}_ does not contains the text Español`)
         }
       })
     }
     })
+    cy.log("switchLang finished")
 })
 
 Cypress.Commands.add('findTitle', (strTitle) => {
@@ -100,26 +102,29 @@ Cypress.Commands.add('findTitle', (strTitle) => {
       expect(matchingTitles).to.have.length.above(0);
       console.log(matchingTitles)
      });
+     cy.log("findTitle finished")
 })
 
 Cypress.Commands.add('addToCart', (strTitle) => {
-
+  //strTitle should be the name of your wished phone.
     const ignoredItems = [];
     let addedItems = [];
 
-    cy.get("[data-asin]").find('h2.a-size-mini').each(($el, index, $list) => {
+    cy.get("[data-asin]:visible").each(($el, index, $list) => {
         
         //Remember, this can't be handeld by cypress itself
-        const textTitle = $el.text();
+        const textTitle = $el.find('h2 a span[class*="a-size-medium a-color-base a-text-normal"]').text();
+        const priceContent = $el.find(`[class="a-offscreen"]`).text();
         //this directly won't work
         //cy.get($el).find(`a.a-link-normal`);
         //$el.text();
 
         //Veryfing in console the value of the $el
-        cy.log(textTitle);
-
+        cy.log(`ANALIZANDO: ${textTitle}`);
+        cy.log(`ANALIZANDO: ${priceContent}`);
+        cy.wait(3000);
         //Adding some logic to select ONLY the items with the following string
-        if(textTitle.includes(strTitle) && addedItems.length <= 1){
+        if((textTitle.includes(strTitle) && priceContent.includes(`$`)) && addedItems.length < 2){
             //this avoid the error triggered bu the click method.
             //cy.once('uncaught:exception', () => false);
 
@@ -133,8 +138,8 @@ Cypress.Commands.add('addToCart', (strTitle) => {
             cy.wrap(btn).click();
             });
 
-            //Adding items to a chart
-            cy.get('#add-to-cart-button').click();
+            //clicking on the add cart button
+            cy.get('#add-to-cart-button').click()
 
             //Finding green icon
             cy.get('#NATC_SMART_WAGON_CONF_MSG_SUCCESS > .a-box > .a-box-inner > .a-icon').should(`be.visible`);
@@ -142,8 +147,9 @@ Cypress.Commands.add('addToCart', (strTitle) => {
             //Verifying also with the string
             cy.get('.a-size-medium-plus').should(`contain`, `Agregado al carrito`)
              addedItems.push({index, textTitle});
-             cy.log(addedItems);
-             cy.log(`index: ${index} of ${textTitle} added, length now is ${addedItems.length}`);
+             cy.log(`The index number: ${index} with title: "${textTitle}" was ADDED, now, the length is ${addedItems.length}`);
+             cy.log(addedItems.length);
+             //cy.pause();
 
             //Going back to be able to repeat all the loop again.
             cy.go(`back`);
@@ -158,14 +164,21 @@ Cypress.Commands.add('addToCart', (strTitle) => {
             
             //this avoid the error triggered bu the click method.
             cy.once('uncaught:exception', () => false);
-          }else{
-            ignoredItems.push({index, textTitle});
-            cy.log(`The index: ${index} called ${textTitle} was added to ignored items list`)
-            cy.log(ignoredItems);
+          } 
+          else {
+            ignoredItems.push({ index, textTitle });
+            cy.log(`The index number: ${index} with title: "${textTitle}" was IGNORED and added to the ignored list, now, the length is ${ignoredItems.length}`);
+            cy.log(ignoredItems.length);
+            //cy.pause();
         }
-      })
+    });
+    
+    cy.log("addToCart finished");
 })
 
+Cypress.Commands.add('add1itemToCart', (strTitle) => {
+
+})
 //
 //
 // -- This is a child command --
