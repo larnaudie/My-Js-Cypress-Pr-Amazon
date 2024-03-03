@@ -7,5 +7,9 @@
     "cypress:open": "cypress open",
     "amazonTests": "npx cypress run --spec cypress/integration/specs/specTestAmazon.js --env url=https://www.amazon.com/",
     "amazonTests2": "npx cypress run amazonTests --headed"
+  },
+  "dependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^20.0.2",
+    "@cypress/browserify-preprocessor": "lastest"
   }
 }

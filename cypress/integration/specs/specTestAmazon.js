@@ -896,8 +896,129 @@ Ahora podemos correr ese script solamente escribiendo npm run envQA.
 
 ////////////////////////////////////////        BDD CUCUMBRER         ////////////////////////////////////////////
 
+https://www.browserstack.com/guide/cypress-cucumber-preprocessor
+https://github.com/badeball/cypress-cucumber-preprocessor
 
---------------------------------------------- iNSTALACION ---------------------------------------------
+---------------------------------------------      iNSTALACION             ---------------------------------------------
+
+Por defecto Cypress no soporta comandos de cucumber.
+Deberemos agregar el paquete a nuestro proyecto y podremos ejecutar nuestros test de cypress en cucumber.
+
+npm install @badeball/cypress-cucumber-preprocessor
+
+Ahora debemos darle la informacion al cypress.config que tenemos cucumber instalado.
+setupNodeEvents, nos ayuda a cargar todos los plugins antes de iniciar la prueba, ahora nosotros
+tenemos un plugin externo llamado cucumber, entonces, tenemos que darle ese detalle al setupNodeEvents.
+¿Como hacerlo? seguiremos la documentacion y dice que debemos agregar estas dos lineas
+
+Quitaron el setupNodeEvents de e2e para afuera como una funcion async
+Luego lo llamaron adentro de e2e para que sea mas legible cuando tengamos muchos plugins.
+
+En cypress.config.js quedaria;
+
+*********************************************************
+const { defineConfig } = require("cypress");
+const preprocessor = require('@badeball/cypress-cucumber-preprocessor');
+const browserify = require('@badeball/cypress-cucumber-preprocessor/browserify');
+
+async function setupNodeEvents(on, config) {
+  // implement node event listeners here
+
+  await preprocessor.addCucumberPreprocessorPlugin(on, config);
+  on ('file:preprocessor', browserify.default(config));
+  return config;
+
+}
+
+module.exports = defineConfig({
+  //CONFIGURAMOS EL TIEMPO DE ESPERA GLOBAL DE la ide de CYPRESS DESDE VISUAL STUDIO CODE.
+  defaultCommandTimeout: 5000,
+
+  env: { 
+    rahulShettyUrl: 'https://rahulshettyacademy.com/angularpractice/',
+  },
+
+  e2e: {
+    setupNodeEvents,
+    specPattern:`cypress/integration/specs/*.js`,
+  }
+});
+************************************************************
+
+AHORA debemos ir al package.json, e importar el broserify
+"@cypress/browserify-preprocessor": "lastest"
+
+Una ultima cosa, dentreo de CYPRESS.CONFIG.JS en e2e, en el specPattern
+nosotros tenemos alli los archivos specs, podemos crear otra carpeta llamda BDD y ahi colocar
+los archivos de cucumber que son .feature.
+Luego en CYPRESS.CONFIG, en specPattern ponemos el path de la carpeta BDD y la extension del archivo.
+
+  e2e: {
+    setupNodeEvents,
+    //specPattern:`cypress/integration/specs/*.js`, <--------La comentamos para no perder lo de antes.
+    specPattern:`cypress/integration/specs/BDD/*.feature`,
+  }
+
+Abrir Visual Studio Code y buscar una extension llamada "Cucumber (Gherkin) Full Support"
+
+-----------------------------------------------------         BBD Syntax          -----------------------------------------------
+
+Adentro de nuestra carpeta specs, vamos a crear una carpeta llamada BDD, alli crearemos un archivo .feature
+por ejemplo:
+amazon.feature
+
+Vamos a ver que su icono, puede actualizarse al mismo que cucumber, depende del estilo de VIsual Studio Code.
+Adentro de la carpeta BDD, vamos a crear otra carpeta CON EXACTAMENTE EL MISMO NOMBRE que le demos
+al archivo .feature, si es amazon.feature, la carepta será amazon, para que luego busque y no se pierda en el
+ camino, ahi en esa carpeta, crearemos un archivo .js. 
+En ese archivo .js estara nuestro codigo automatizado, le podemos llamar amazonSteps.js
+Cucumber, no usara los archivos que teniamos en specs, como specTestAmazon.js, sino los que estaran en la carpeta BDD.
+Ahi vamos a despedazar nuestro codigo en partes relacionandolos con cada test case descripto en cucumber.
+
+BBD Cucumber, usa una sintaxis para ordenar los test cases.
+FEATURE, SCENARIO, GIVE, WHEN, AND, y termina con WHEN.
+Permite manejar multiples test cases.
+
+FEATURE: Precisa un Nombre y una descripcion.
+
+        Explicacion de lo que va a estar haciendo nuestro archivo .feature
+        Un feature, puede tener multiples scenarios, es como una suite con multiple test cases.
+
+      SCENARIO: Nombre del Test Case.
+Luego de scenario, entran en juego GIVEN, WHeN, THEN, THEN.
+
+      GIVEN: Se ejecuta antes de cada test case.
+      WHEN: Aca se dirá cual es el proximo paso que va a pasar.
+      AND: Es una conexion para no repetir tanto el when
+      THEN: es el resultado final, el objetivo de mi scenario.
+
+Ahora tendremos que enlazar este .feature con nuestro .js, asi nuestro codigo y los pasos estan relacionados.
+En la carpeta BDD tenemos los pasos en cucumber
+Adentro de la carpeta BDD tenemos los archivos .feature y una carpeta nombarada igual que ese .feature 
+Adentro de cada carpeta estaran los .js con los pasos a seguir descriptos en .feature.
+Luego los vaoms a relacionar entre ellos.
+
+ABRIMOS ARCHIVO amazonSteps.js
+
+Lo primero que tenemos que ahcer es importar todo
+import {GIVEN, THEN, WHEN, AND} from "cypress-cucumber-preprocessor/steps";
+
+Ahora debemos empezar a escribir el paso y abajo el codigo que hace lo que describe el paso.
+GIVEN("el titulo que le dieron a given", ()=>{
+  el codigo que hace lo que describe el paso.
+})
+
+En la parte superior, debemos importar los pageobect model, las referencias de cypress, los given, then, when
+y todo lo que estuviesemos necestiando para usar en el codigo, lo mismo que usamos en los specTestAmazon.js
+
+------------------------------------------    HOOKS ON CUCUMBER   ---------------------------------------------
+
+EN CUCUMBER TAMBIEN ESTAN LOS HOOKS, PODEMOS USAR BEFORE, BEFOREEACH AFTER Y AFTEREACH.
+
+Si tenemos un hook, debemos crear un archivo .js con el nombre del hook, por ejemplo beforeEach.js y ahi colocar nuestro codigo.
+Entonces, dentro de la carpeta BDD, dentro de la carpeta amazon (o lo que sea), pondremos el beforeEach.js
+
+
 
 
 
@@ -1467,12 +1588,10 @@ describe("Testing Amazon, improving new methodologies", ()=>
 
   })
 
-  it("Sum products on Amazon", function () {
+  it.skip("Sum products on Amazon", function () {
     const homePage = new HomePage();
     //We need to search the phone.
     cy.searchProduct(this.data.searchPhone[1])
     cy.addToCart(this.data.searchPhone[1]);
-    //Here we pass the number 0 of index stored in the array
-    //cy.addToCart(this.data.searchPhone)
   })
 })
