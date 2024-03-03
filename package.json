@@ -4,6 +4,8 @@
     "cypress-iframe": "^1.0.1"
   },
   "scripts": {
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "amazonTests": "npx cypress run --spec cypress/integration/specs/specTestAmazon.js --env url=https://www.amazon.com/",
+    "amazonTests2": "npx cypress run amazonTests --headed"
   }
 }

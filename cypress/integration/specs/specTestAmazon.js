@@ -18,21 +18,10 @@ npm run cypress:open
 
 //////////////////////////////////    EJECUTAR CYPRESS    ///////////////////////////////////////////
 
+
 //Para ejecutar todos los archivos spec en la carpeta package.json
 ./node_modules/.bin/cypress run
 
-//Para ejecutar un spec file especifico, despues del fun colocar el nombre del spec que quiero
-npx cypress run --spec “cypress/integration/my-spec.js”
-
-//SI EJECUTAMOS ASI CYPRESS SE EJECUTARA INVISIBLE
-
-//SI queremos que se ejecute visible la interfaz
-./node_modules/.bin/cypress run --header
--
-//Si queremos ejecutarlo en Electron:
-$ cypress run --header
-//Si queremos ejecutarlo en chrome
-$ cypress run --browser chrome
 
 -//////////////////////      AUTO-SUGERENCIA CYPRESS    ////////////////////////////////////////////
 
@@ -43,7 +32,6 @@ Esto se debe colocar arriba del todo en cypress y activa la sugerencia automatic
 
 
 //////////////////////////////    cARPETAS Y SUS FUNCIONES   ////////////////////////////////////////////
-
 
 
                          -------    Carpeta fixtures -------------
@@ -795,6 +783,121 @@ Cypress.config('defaultCommandTimeout', 5000);
 
 
 
+////////////////////////////////////     VARIABLES, AMBIENTES, ENVIRONMENTS          //////////////////////////////////////
+
+lAS VARIABLES SE USAN PARA ESTABLECE VALORES GLOBALMENTE Y APLICARLO A TODOS LOS CASOS DE PRUEBA EN EL FRAMEWORK.
+Abrimos archivo cypress.config.js
+  podemos configurar ahi un conjunto de variables de entorno o environments, para declararlas y reutilizar.
+  Lo mas comun es configurar environments para URL.
+  Por ejemplo; tenemos entornos de pruebas, entonro desarrollo, entorno aceptacion usaurio UAT, entorno produccion.
+  
+  Entorno de prodcuccion puede ser;
+  https://rahulshettyacademy.com/angularpractice
+  Entorno UAT:
+  https://uatrahulshettyacademy.com/angularpractice
+  Entorno de pruebas
+  https://qarahulshettyacademy.com/angularpractice
+
+El objetico del environment es facilitar el cambio de entorno de pruebas, pruebas, si tenemos que probar en
+prod, qa, uat, etc, tenemos cada entorno guardado en un ambiente, entonces simplemente debemos correr las pruebas 
+eligiendo el ambiente correcto.
+
+¿COMO HACER?
+Ir a Cypress IDE, settings -> Project Settings
+Alli debemos buscar un env: {}, generalmente esta en blanco.
+Vamos a llamarlo e invocarlo en el archivo cypress.config.js para configurar alli nuestros ambientes.
+
+  En cypress.config.js, debemos escribir env: { }
+------------------------------------------------------------
+  const { defineConfig } = require("cypress");
+
+  module.exports = defineConfig({
+    //CONFIGURAMOS EL TIEMPO DE ESPERA GLOBAL DE la ide de CYPRESS DESDE VISUAL STUDIO CODE.
+    defaultCommandTimeout: 5000,
+
+   env: { 
+    "elementoGlobal": "https://rahulshettyacademy.com/angularpractice/",
+    //Podemos utilizarlo como un example.json pero de modo global y accediendo con cyprees.env(`userId`)
+    "userId": "Pablolarnaudie",
+    },
+
+    e2e: {
+      setupNodeEvents(on, config) {
+        // implement node event listeners here
+      },
+      specPattern:`cypress/integration/specs/*.js`,
+    }
+  });
+--------------------------------------------------------------
+
+Ahora, en el ENV, creamos un objeto Value:key con elnombre del ambiente y como valor el ambiente.
+  
+  env: { 
+      url: 'https://rahulshettyacademy.com/angularpractice/',
+    },
+
+Ahora tendremosq ue llamar al ambiente en el it block, debemos hacerlo mediante la palabra Cypress.env(url)
+En el archivo spec:
+
+    cy.visit(Cypress.env(`url`));
+
+Si la raiz es la misma pero cambia el final podemos concatenar los strings.
+Si da error, cerrar Cypores IDE y abrirlo de nuevo.
+
+    cy.visit(Cypress.env(`url`) + `/angularpractice/`)
+
+Esta configuracion sirve para todo, no solo ambientes, podemos guardar userID tambien, es como un example.json, pero global.
+
+
+
+/////////////////////////////////////////       CYPRESS PACKAGE.JSON         ////////////////////////////////////////////
+
+
+
+Tambien podemos darle desde la terminal, decirle que corra el spec desde la terminal.
+INDEPENDIENTEMENTE DEL CYPRESS.CONFIG.JS
+NOTA; Si Cypress se instalo globamente no necesitamos npx, pero si estamos trabajdo con CI o CD, precisamos escribir npx.
+
+  npx cypress run --spec “cypress/integration/specs/specTestAmazon.js” --env url=https://rahulshettyacademy.com/angularpractice
+
+LA PARTE MAS IMPORTANTE ES ÉSTA: --env url=https://rahulshettyacademy.com/angularpractice
+Ahi estamos indicando en que ambiente quiero correr las pruebas.
+Si queremos crrerlo en moodo oculto, podemos escribir --headed antes del --env
+Si queremos correrlo en un browser especiico podemos poner despues del header y antes del --env; --browser chrome.
+
+//Para ejecutar un spec file especifico, despues del run colocar el nombre del spec que quiero.
+//Revisar Resumen en Environments.
+  npx cypress run --spec “cypress/integration/my-spec.js”
+
+//SI EJECUTAMOS ASI CYPRESS SE EJECUTARA INVISIBLE
+
+//SI queremos que se ejecute visible la interfaz, por defecto es --headless.
+./node_modules/.bin/cypress run --header
+
+//Si queremos ejecutarlo en chrome
+cypress run --browser chrome
+
+//Si quiero agregarle un ambiente puedo agregar luego del --header y --browser;
+
+cypress run --header --env envName=envValue
+
+//puedo crear nombres personales que alamcenen el valor del ambiente para llamarlo mas rapido.
+//No preciso crear un ambiente en Cypress.config.js -> ENV. ESTO ES INDEPENDIENTE a Cypress.config.js.
+//npx se usa cuando cypress no fue instalado globalmente, el envName tiene que estar en Cypress.config.js
+
+scripts:{
+  "cypress:open": "cypress open --env envName=envValue"
+  "envQA": npx cypress run --spec “cypress/integration/my-spec.js” --env envName=envValue
+}
+
+Ahora podemos correr ese script solamente escribiendo npm run envQA.
+
+
+
+////////////////////////////////////////        BDD CUCUMBRER         ////////////////////////////////////////////
+
+
+--------------------------------------------- iNSTALACION ---------------------------------------------
 
 
 
